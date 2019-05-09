@@ -255,7 +255,7 @@ end
 
 to contar_muertos
 
-  foreach particulas
+
 
 
 end

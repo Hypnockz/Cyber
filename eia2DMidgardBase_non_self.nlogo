@@ -125,8 +125,7 @@ fin-simulacion
   activeDelay1
   activeDelay2
 
-  Test1
-  n_muertos
+  Test2
 
  ]
 
@@ -172,8 +171,7 @@ to iniciar-parametros
   set celdas-rojas 0                     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   set longitud-automata 60
   set penalizacion-similitud 100
-  set Test1 69
-  set n_muertos 0
+  set Test2 0
   ;;Parámetros histograma
 
 
@@ -252,13 +250,6 @@ end
      ;;set pcolor energia
     ]
   end
-
-to contar_muertos
-
-  foreach particulas
-
-
-end
 
 
 
