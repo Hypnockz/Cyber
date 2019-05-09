@@ -581,7 +581,7 @@ to cargar-datos3  ;;version con carga de datos desde archivo
 
     ask patches with [ pxcor = 0 and pcolor != white][
       foreach particulas [ i ->
-        set energia (energia + 83 - position i genes * 2.9)
+        set energia (energia + 83 - position i genes * )
       ]
 
 
