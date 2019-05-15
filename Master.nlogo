@@ -11,7 +11,7 @@ to setup
   ls:create-models 1  "eia2DMidgardBase.nlogo"
   set self_model last ls:models
 
-  ls:create-models  1 "eia2DMidgardBase_non_self.nlogo"
+  ls:create-interactive-models  1 "eia2DMidgardBase_non_self.nlogo"
   set nonself_model last ls:models
 
   ls:ask ls:models[
@@ -19,25 +19,30 @@ to setup
    set archivoAtaque "LOIC-00"
   ]
 
+  ls:show ls:models
+
   reset-ticks
 end
 
 to go
 
-  let aux [Test1] ls:of self_model
-  show aux
+  ls:ask ls:models [go]
 
-  show [Test2] ls:of nonself_model
+  let delta [pob-delta] ls:of self_model
+  show delta
 
-  ls:assign nonself_model Test2 aux + 1
+  show [pob-delta] ls:of nonself_model
 
-  show [Test2] ls:of nonself_model
+  ls:assign nonself_model pob-delta delta
+
+  show [pob-delta] ls:of nonself_model
   ;ls:ask self_model [
    ; set aux Test1
   ;]
 
-end
+  tick
 
+end
 
 
 
@@ -94,7 +99,7 @@ BUTTON
 157
 NIL
 go
-NIL
+T
 1
 T
 OBSERVER

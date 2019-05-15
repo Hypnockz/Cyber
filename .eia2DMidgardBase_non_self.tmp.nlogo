@@ -173,7 +173,7 @@ to iniciar-parametros
   set longitud-automata 60
   set penalizacion-similitud 100
   set Test2 0
-  set pob-delta 0
+  set pob-delta 10
   ;;Parámetros histograma
 
 

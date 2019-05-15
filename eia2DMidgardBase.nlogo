@@ -126,7 +126,9 @@ fin-simulacion
   activeDelay2
 
   Test1
-  n_muertos
+  pob-prev
+  pob-delta
+  pheromones
 
  ]
 
@@ -173,7 +175,9 @@ to iniciar-parametros
   set longitud-automata 60
   set penalizacion-similitud 100
   set Test1 69
-  set n_muertos 0
+  set pob-prev  0
+  set pob-delta  0
+  set pheromones 0
   ;;Parámetros histograma
 
 
@@ -253,10 +257,14 @@ end
     ]
   end
 
-to contar_muertos
+to delta-poblacion
 
-  foreach particulas
-
+  let  pob-actual count patches with [pcolor != white and pxcor = 0]
+  show pob-actual
+  show pob-prev
+  show pob-delta
+  show "--"
+  set pob-delta (pob-actual - pob-prev)
 
 end
 
@@ -271,14 +279,23 @@ to go
   ifelse (not fin-simulacion)[
     if (ticks =  ventana-entrenamiento) [establecer-limites-bandas]
     cargar-datos3
+
+    set pob-prev 0
+
+
+    set pob-prev count patches with [pcolor != white and pxcor = 0]
+
+
     if (activar-penalizacion = True) [penalizar-similares]
     ejecutar-regla-EIA-AB
 
+    delta-poblacion
     registro-funcionamiento
     calculo-umbral
     graficar
     verificar-ataque
     tabla-contingencia
+
 
     ;;HISTOGRAMA;;;;;;;;;;;;;;;;;;;;;;;;
     calcular-diversidad               ;;
@@ -503,7 +520,17 @@ to ejecutar-regla-EIA-AB
     if (energia > 100) [ set pcolor green ]
     if ((energia <= 100) and ( energia > 50)) [ set pcolor yellow ]
     if ((energia <= 50) and ( energia > 0)) [ set pcolor red ]
-    if (energia <= 0) [ set pcolor white ]
+    if (energia <= 0) [
+      set pcolor white
+      set pheromones pheromones + 1
+    ]
+    if (pheromones > 0)[
+      set pheromones  pheromones / 2
+      if (pheromones < 0) [
+        set pheromones 0
+      ]
+    ]
+
   ]
 end
 
@@ -748,10 +775,10 @@ to establecer-limites-bandas
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-741
-233
-1351
-444
+711
+442
+1321
+653
 -1
 -1
 2.0
@@ -775,10 +802,10 @@ ticks
 30.0
 
 TEXTBOX
-755
-213
-905
-231
+725
+422
+875
+440
 AC
 11
 0.0
@@ -819,10 +846,10 @@ NIL
 1
 
 PLOT
-786
-10
-1350
-226
+756
+219
+1320
+435
 Celdas-Tiempo
 Tiempo
 #
@@ -976,10 +1003,10 @@ VN
 11
 
 PLOT
-741
-473
-1352
-623
+711
+682
+1322
+832
 Alertas-Tiempo
 NIL
 NIL
@@ -1076,6 +1103,24 @@ LOIC-00
 1
 0
 String
+
+PLOT
+788
+10
+1320
+214
+Pheromones
+NIL
+NIL
+0.0
+0.0
+0.0
+0.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot pheromones"
 
 @#$#@#$#@
 #EL MODELO
@@ -1682,6 +1727,17 @@ NetLogo 6.0.4
       <value value="&quot;Switch-07&quot;"/>
       <value value="&quot;Switch-08&quot;"/>
       <value value="&quot;Switch-09&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="activar-penalizacion">
+      <value value="true"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="LOIC" repetitions="1" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <metric>count turtles</metric>
+    <enumeratedValueSet variable="archivoAtaque">
+      <value value="&quot;LOIC-00&quot;"/>
     </enumeratedValueSet>
     <enumeratedValueSet variable="activar-penalizacion">
       <value value="true"/>
