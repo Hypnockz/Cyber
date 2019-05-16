@@ -525,7 +525,7 @@ to ejecutar-regla-EIA-AB
       set pheromones pheromones + 1
     ]
     if (pheromones > 0)[
-      set pheromones  pheromones / 2
+      set pheromones  pheromones * 3/ 5
       if (pheromones < 0) [
         set pheromones 0
       ]
