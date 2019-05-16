@@ -129,6 +129,7 @@ fin-simulacion
   pob-prev
   pob-delta
   pheromones
+  cryogenic-capsule
 
  ]
 
@@ -178,6 +179,7 @@ to iniciar-parametros
   set pob-prev  0
   set pob-delta  0
   set pheromones 0
+  set cryogenic-capsule []
   ;;Parámetros histograma
 
 
@@ -260,10 +262,10 @@ end
 to delta-poblacion
 
   let  pob-actual count patches with [pcolor != white and pxcor = 0]
-  show pob-actual
-  show pob-prev
-  show pob-delta
-  show "--"
+  ;show pob-actual
+  ;show pob-prev
+  ;show pob-delta
+  ;show "--"
   set pob-delta (pob-actual - pob-prev)
 
 end
@@ -289,6 +291,8 @@ to go
     if (activar-penalizacion = True) [penalizar-similares]
     ejecutar-regla-EIA-AB
 
+    strong-agent
+
     delta-poblacion
     registro-funcionamiento
     calculo-umbral
@@ -311,7 +315,27 @@ to go
   ]
 end
 
+to strong-agent
+  if (pheromones < 4)[
+     ask max-n-of 50 patches with [pxcor = 0] [energia][
+      set cryogenic-capsule lput genes cryogenic-capsule
+    ]
+  ]
 
+
+end
+
+to inoculate-agent
+
+  foreach cryogenic-capsule[ i ->
+    ask patches with [pxcor = 0 and pycor = random-pycor] [
+      set genes i
+    ]
+  ]
+
+
+
+end
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;;Rutinas de Visualización de comportamiento
