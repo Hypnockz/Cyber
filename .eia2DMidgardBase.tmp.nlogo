@@ -130,6 +130,7 @@ fin-simulacion
   pob-delta
   pheromones
   cryogenic-capsule
+  pher-prom
 
  ]
 
@@ -180,6 +181,7 @@ to iniciar-parametros
   set pob-delta  0
   set pheromones 0
   set cryogenic-capsule []
+  set pher-prom []
   ;;Parámetros histograma
 
 
@@ -291,7 +293,22 @@ to go
     if (activar-penalizacion = True) [penalizar-similares]
     ejecutar-regla-EIA-AB
 
-    strong-agent
+    ;show pher-prom
+
+    ifelse (ticks > 100) [
+      set pher-prom fput pheromones pher-prom
+      set pher-prom but-last pher-prom
+    ]
+    [
+      set pher-prom fput pheromones pher-prom
+    ]
+
+    ;show pher-prom
+    ;show "--"
+
+
+    if(ticks > 100) [ strong-agent ]
+    if (ticks > 300) [ inoculate-agent ]
 
     delta-poblacion
     registro-funcionamiento
@@ -316,8 +333,11 @@ to go
 end
 
 to strong-agent
-  if (pheromones < 4)[
-     ask max-n-of 50 patches with [pxcor = 0] [energia]{
+  ;show "--"
+ ; show mean pher-prom
+  if (mean pher-prom > 0 and mean pher-prom < 0.15)[
+    show "Getting strong agent"
+     ask max-n-of 50 patches with [pxcor = 0] [energia][
       set cryogenic-capsule lput genes cryogenic-capsule
     ]
   ]
@@ -327,9 +347,12 @@ end
 
 to inoculate-agent
 
-  foreach cryogenic-capsule[ i ->
-    ask patches with [pxcor = 0 and pycor = random-pycor] [
-      set genes i
+  if(pob-delta < -5)[
+    show "Inoculate"
+    foreach cryogenic-capsule[ i ->
+      ask one-of ( patches with [pxcor = 0] ) [
+        set genes i
+      ]
     ]
   ]
 
