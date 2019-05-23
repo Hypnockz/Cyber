@@ -111,8 +111,8 @@ to reproduce
       let mutatedGenes genes
       let r1 (random 20) + 6
       let r2 (random 11) + 26
-      set mutatedGenes (replace-item r1 (item r2 genes) mutatedGenes)
-      set mutatedGenes (replace-item r2 (item r1 genes) mutatedGenes)
+      set mutatedGenes (replace-item r1 mutatedGenes (item r2 genes))
+      set mutatedGenes (replace-item r2 mutatedGenes (item r1 genes))
       ask one-of (gladiators with [not championship and energy < 50]) [
         set genes mutatedGenes
       ]

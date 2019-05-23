@@ -27,8 +27,8 @@ to setup
   reset-ticks
   file-close-all
 
-  set a
-  file-open "Tor-00"
+  set archivoAtaque "Tor-00"
+  file-open archivoAtaque
 
   setup-global-vars
   ;;graphics and agents
@@ -111,7 +111,7 @@ to reproduce
       let mutatedGenes genes
       let r1 (random 20) + 6
       let r2 (random 11) + 26
-      set mutatedGenes (replace-item r1 (item r2 genes) mutatedGenes)
+      set mutatedGenes (replace-item r1  mutatedGenes)
       set mutatedGenes (replace-item r2 (item r1 genes) mutatedGenes)
       ask one-of (gladiators with [not championship and energy < 50]) [
         set genes mutatedGenes
