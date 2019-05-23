@@ -8,7 +8,7 @@ globals [
 to setup
   ls:reset
   ca
-  ls:create-models 1  "eia2DMidgardBase.nlogo"
+  ls:create-interactive-models 1  "eia2DMidgardBase.nlogo"
   set self_model last ls:models
 
   ls:create-interactive-models  1 "firstLayerPrototype.nlogo"
@@ -16,7 +16,7 @@ to setup
 
   ls:ask self_model[
     setup
-    set archivoAtaque "LOIC-00"
+    set archivoAtaque "Tor-00"
   ]
    ls:ask nonself_model[
     setup
@@ -30,9 +30,11 @@ end
 
 to go
 
-  ls:ask ls:models [go]
 
   ls:assign nonself_model pheromones [ pheromones ] ls:of self_model
+  ls:ask ls:models [go]
+
+
 
 
   ;ls:ask self_model [
