@@ -124,7 +124,7 @@ to pass-away
       if (prob <= 10) [ ;;from age 800, they have 10% chance of dying
         set genes shuffle (genes)
         set energy 10
-
+        set age 0
         set color (map random [256 256 256])
       ]
     ]
