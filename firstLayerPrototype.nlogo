@@ -107,7 +107,7 @@ end
 to reproduce
   ask gladiators with [energy >= 500][
     let roulette (random 101)
-    if (roulette < 8) [ ;;8% chance of giving genes
+    if (roulette < 5 and any? gladiators with [not championship and energy < 50]) [ ;;5% chance of giving genes
       let mutatedGenes genes
       let r1 (random 20) + 6
       let r2 (random 11) + 26
