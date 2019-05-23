@@ -7,6 +7,9 @@ globals [
 
   ;;constraints
   maxEnergy
+
+  ;;file
+  archivoAtaque
 ]
 
 breed [gladiators gladiator]
@@ -24,7 +27,8 @@ to setup
   reset-ticks
   file-close-all
 
-  file-open "Tor-00"
+  set archivoAtaque "Tor-00"
+  file-open archivoAtaque
 
   setup-global-vars
   ;;graphics and agents
