@@ -11,12 +11,16 @@ to setup
   ls:create-models 1  "eia2DMidgardBase.nlogo"
   set self_model last ls:models
 
-  ls:create-interactive-models  1 "eia2DMidgardBase_non_self.nlogo"
+  ls:create-interactive-models  1 "firstLayerPrototype.nlogo"
   set nonself_model last ls:models
 
-  ls:ask ls:models[
-  setup
-   set archivoAtaque "LOIC-00"
+  ls:ask self_model[
+    setup
+    set archivoAtaque "LOIC-00"
+  ]
+   ls:ask nonself_model[
+    setup
+    set archivoAtaque "Tor-00"
   ]
 
   ls:show ls:models
@@ -28,14 +32,9 @@ to go
 
   ls:ask ls:models [go]
 
-  let delta [pob-delta] ls:of self_model
-  show delta
+  ls:assign nonself_model pheromones [ pheromones ] ls:of self_model
 
-  show [pob-delta] ls:of nonself_model
 
-  ls:assign nonself_model pob-delta delta
-
-  show [pob-delta] ls:of nonself_model
   ;ls:ask self_model [
    ; set aux Test1
   ;]
@@ -43,7 +42,6 @@ to go
   tick
 
 end
-
 
 
 
