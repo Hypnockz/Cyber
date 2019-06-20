@@ -83,7 +83,7 @@ end
 to go
   load-data
   ;;force evolution only in case of attack
-  if (pheromone >= pheromoneThreshold)[
+  if (pheromones >= pheromoneThreshold)[
     feed
     move
     reproduce
