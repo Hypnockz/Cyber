@@ -10,6 +10,9 @@ globals [
 
   ;;file
   archivoAtaque
+
+  ;;other parameters
+  moveThreshold championshipThreshold reproductionThreshold
 ]
 
 breed [gladiators gladiator]
@@ -49,14 +52,17 @@ to setup-global-vars
     31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 ]
 
   ;;feed formula
-  set baseFood 20
-  set poisonMult 0.8
+  set baseFood 10
+  set poisonMult 0.7
 
   ;;world constants
   set metabolismEnergy 5
 
   ;;constraints
-  set maxEnergy 800
+  set maxEnergy 2000
+  set moveThreshold 800
+  set reproductionThreshold 1000
+  set championshipThreshold 1400
 end
 
 to load-data
@@ -98,7 +104,7 @@ to feed
 end
 
 to move
-  ask gladiators with [energy > 400] [
+  ask gladiators with [energy > moveThreshold] [
     forward 1
     set heading heading + (random 360)
   ]
@@ -106,16 +112,33 @@ end
 
 to reproduce
   ask gladiators with [energy >= 500][
-    let roulette (random 101)
-    if (roulette <  and any? gladiators with [not championship and energy < 50]) [ ;;8% chance of giving genes
-      let mutatedGenes genes
+    let roulette (random 1001) ;;0.1%
+    if (roulette < 1 and any? gladiators with [not championship and energy < 50]) [ ;;5% chance of giving genes
       let r1 (random 20) + 6
       let r2 (random 11) + 26
-      set mutatedGenes (replace-item r1 mutatedGenes (item r2 genes))
-      set mutatedGenes (replace-item r2 mutatedGenes (item r1 genes))
-      ask one-of (gladiators with [not championship and energy < 50]) [
-        set genes mutatedGenes
+
+      let seg1 (sublist genes 0 r1)
+      let rev reverse (sublist genes r1 r2)
+      let seg2 (sublist genes r2 53)
+
+      foreach rev [i ->
+        set seg1 lput i seg1]
+      foreach seg2 [i ->
+        set seg1 lput i seg1]
+
+      show seg1 ;;seg1 has the mutated genes
+      ;;shuffle the segment (or invert it)
+      hatch-gladiators 1 [
+        set genes seg1
+        set energy 0
+
       ]
+      ;
+      ;set mutatedGenes (replace-item r1 mutatedGenes (item r2 genes))
+      ;set mutatedGenes (replace-item r2 mutatedGenes (item r1 genes))
+      ;ask one-of (gladiators with [not championship and energy < 50]) [
+      ;  set genes mutatedGenes
+      ;]
     ]
   ]
 end
@@ -139,7 +162,7 @@ to pass-away
 end
 
 to ascend
-  ask gladiators with [energy >= 500 and not championship][
+  ask gladiators with [energy >= 50 and not championship][
     set shape "shield"
     set championship true
   ]
@@ -252,7 +275,42 @@ true
 false
 "" ""
 PENS
-"default" 1.0 0 -16777216 true "" "let totalEnergy 0\nask gladiators[\n  set totalEnergy (totalEnergy + energy)\n]\nplot totalEnergy"
+"pen-1" 1.0 0 -1604481 true "" "plot mean [energy] of turtles"
+
+BUTTON
+126
+133
+189
+166
+step
+go
+NIL
+1
+T
+OBSERVER
+NIL
+NIL
+NIL
+NIL
+1
+
+PLOT
+688
+241
+1166
+437
+Best inidvidual energy
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot max [energy] of gladiators"
 
 @#$#@#$#@
 ## WHAT IS IT?
