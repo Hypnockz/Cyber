@@ -130,8 +130,11 @@ fin-simulacion
   pob-delta
   pheromones
   cryogenic-capsule
+  flag_capsule
   pher-prom
   Tipo_ataque_value
+  List_ss
+  index_attack
  ]
 
 ;; celdas tienen energía asociada y vector genético
@@ -182,7 +185,10 @@ to iniciar-parametros
   set pob-delta  0
   set pheromones 0
   set cryogenic-capsule []
+  set flag_capsule 0
   set pher-prom []
+  set List_ss [3906 11276 13516 24053 42895 47190 50392 53060 55934 58180 62381 66405 69666 72447 75490 77508 80265 83190 86985 89178]
+  set index_attack 0
   ;;Parámetros histograma
 
 
@@ -338,6 +344,7 @@ to strong-agent
  ; show mean pher-prom
   if (mean pher-prom > 0 and mean pher-prom < 0.15)[
     show "Getting strong agent"
+    set flag_capsule 1
      ask max-n-of 50 patches with [pxcor = 0] [energia][
       set cryogenic-capsule lput genes cryogenic-capsule
     ]
@@ -348,7 +355,7 @@ end
 
 to inoculate-agent
 
-  if(pob-delta < -5)[
+  if(pob-delta < -5 and flag_capsule = 1)[
     show "Inoculate"
     foreach cryogenic-capsule[ i ->
       ask one-of ( patches with [pxcor = 0] ) [
@@ -622,6 +629,17 @@ end
 
 to cargar-datos
 
+
+  if(Tipo_ataque = "variedLength")[
+    ;show "Distintos Ataques"
+
+  ]
+
+  if(Tipo_ataque = "superSet")[
+    ;show "Distintos Ataques"
+    superSet
+  ]
+
   if(Tipo_ataque = "Distintos Ataques")[
     ;show "Distintos Ataques"
     cargar-datos2
@@ -637,6 +655,115 @@ to cargar-datos
 
 
 end
+
+
+to variedLength
+
+
+
+
+
+end
+
+
+to superSet
+
+  if ( (flag-par = 1) and (not (file-at-end?))  ) [ ;; hay lineas en el archivo que leer
+
+
+    set lineas-leidas lineas-leidas + 1
+
+    ;; se trabaja como string se deben individualizar los datos y usar reglas para generar breeds sedimientos (en las reglas se puede manejar estados multiples y otras discretizaciones
+    ;; luego de generar los sedimentos "nuevos" se procede con las herramientas de an�lisis
+    ;; eventualmente cambiar preNN.pl para facilitar la lectura de datos
+
+
+
+    set caracteristicas-archivo  (sentence    list file-read file-read  file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read
+      file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read
+      file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read)
+
+    ifelse ((item 54 caracteristicas-archivo) > 0) [set ataque 400 ] [set ataque 0]
+
+    ;; Esta versión carga las características que son binarias al flujo
+    ;;"puertoOrigen_0,puertoDestino_1,protocolo_2,TTL_3,TOS_4,IPLen_5,DgmLen_6,RB_7,MF_8,DF_9,opcionesIP_10,F1_11,F2_12,U_13,A_14,P_15,R_16,S_17,F_18,Win_19,
+    ;;TcpLen_20,opcionesTCP_21,UDPLen_22,Type_23,Code_24,telnet_25,ssh_26,ftp_27,netbios_28,rlogin_29,rpc_30,nfs_31,lockd_32,netbiosWinNT_33,Xwin_34,dns_35,
+    ;;ldap_36,smtp_37,pop_38,imap_39,http_40,ssl_41,px_42,serv_43,time_44,tftp_45,finger_46,nntp_47,ntp_48,lpd_49,syslog_50,snmp_51,bgp_52,socks_53\n"
+
+    ;; configuraci�n binaria
+    set indice-caracteristicas-utilizadas [7 8 9 11 12 13 14 15 16 17 18 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53]
+
+
+    ;; determinando el número de características presentes (binario)
+
+    let contador-caracteristicas-activas 0
+    set particulas[]
+    foreach indice-caracteristicas-utilizadas [ ?1 ->
+
+      if ((item ?1 caracteristicas-archivo) > 0)
+      [
+        set contador-caracteristicas-activas (contador-caracteristicas-activas + 1)
+        set particulas lput ?1 particulas
+
+
+
+      ]
+
+    ]
+
+    ;;Alimentar celdas (agentes)
+
+    ask patches with [ pxcor = 0 and pcolor != white][
+      foreach particulas [ i ->
+        set energia (energia + 83 - position i genes * 2.9)
+      ]
+
+
+    ]
+    ;; el orden de los datos importa mucho
+
+    ;;Aplicación del metabolismo
+
+  ] ;;cierre de if de verificación de archivo
+
+  if ((flag-par = 1) and index_attack > 19)
+  [
+      set fin-simulacion true
+      stop
+  ]
+
+  if((flag-par = 1) and ( ticks > (  item index_attack List_ss + 2000)  ))[
+    show "Back to normal!"
+    set index_attack index_attack + 1
+    set fuente-datos-bin 0
+  ]
+  if((flag-par = 1) and ( ticks =  (  item index_attack List_ss )))[
+  show "Under Attack!"
+  set fuente-datos-bin 1
+  ]
+
+  if((flag-par = 1) and ticks = 3905)[
+    show "End of Training"
+  ]
+
+    ;;Primera tanda de ataques de Denegacion de Servicio
+    if ( flag-par = 0 )
+    [
+      set nombre-archivo archivoAtaque
+
+      file-open nombre-archivo
+      set fuente-datos nombre-archivo
+      set fuente-datos-bin 0
+      set archivos-procesados (archivos-procesados + 1)
+      set lineas-leidas 0
+      set flag-par 1
+
+    ]
+
+
+
+end
+
 
 to cargar-datos2  ;;version con carga de datos desde archivo
   ifelse ( (lineas-leidas < 950) and (not (file-at-end?))  ) [ ;; hay lineas en el archivo que leer
@@ -1272,7 +1399,7 @@ INPUTBOX
 484
 572
 archivoAtaque
-Switch-00
+superSet01
 1
 0
 String
@@ -1313,8 +1440,8 @@ CHOOSER
 562
 Tipo_ataque
 Tipo_ataque
-"Ataques Esporadicos" "Distintos Ataques"
-0
+"variedLength" "superSet" "Ataques Esporadicos" "Distintos Ataques"
+1
 
 @#$#@#$#@
 #EL MODELO
