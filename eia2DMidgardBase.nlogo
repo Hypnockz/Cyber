@@ -343,7 +343,7 @@ to strong-agent
   ;show "--"
  ; show mean pher-prom
   if (mean pher-prom > 0 and mean pher-prom < 0.15)[
-    show "Getting strong agent"
+    ;show "Getting strong agent"
     set flag_capsule 1
      ask max-n-of 50 patches with [pxcor = 0] [energia][
       set cryogenic-capsule lput genes cryogenic-capsule
@@ -715,7 +715,8 @@ to superSet
 
     ask patches with [ pxcor = 0 and pcolor != white][
       foreach particulas [ i ->
-        set energia (energia + 83 - position i genes * 2.9)
+        set energia (energia + 80 - ((position i genes) ^ 2) * 0.085 )
+
       ]
 
 
@@ -1171,8 +1172,8 @@ PENS
 PLOT
 3
 12
-589
-331
+232
+253
 Variabilidad-Genetica
 Especímenes
 Cantidad
@@ -1211,7 +1212,7 @@ SWITCH
 417
 activar-penalizacion
 activar-penalizacion
-0
+1
 1
 -1000
 
@@ -1442,6 +1443,24 @@ Tipo_ataque
 Tipo_ataque
 "variedLength" "superSet" "Ataques Esporadicos" "Distintos Ataques"
 1
+
+PLOT
+274
+72
+474
+222
+Variedad energia
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot count turtles"
 
 @#$#@#$#@
 #EL MODELO
