@@ -135,6 +135,12 @@ fin-simulacion
   Tipo_ataque_value
   List_ss
   index_attack
+  energy_prom
+  energy_umbral
+  energy_actual
+  timer_attack
+  timer_normality
+  under_attack
  ]
 
 ;; celdas tienen energía asociada y vector genético
@@ -189,6 +195,12 @@ to iniciar-parametros
   set pher-prom []
   set List_ss [3906 11276 13516 24053 42895 47190 50392 53060 55934 58180 62381 66405 69666 72447 75490 77508 80265 83190 86985 89178]
   set index_attack 0
+  set energy_prom []
+  set energy_umbral 0 ;; energy prom anterior
+  set energy_actual 0
+  set timer_attack 0
+  set timer_normality 0
+  set under_attack 0
   ;;Parámetros histograma
 
 
@@ -305,18 +317,22 @@ to go
     ifelse (ticks > 100) [
       set pher-prom fput pheromones pher-prom
       set pher-prom but-last pher-prom
+
     ]
     [
       set pher-prom fput pheromones pher-prom
     ]
 
+
+
     ;show pher-prom
     ;show "--"
 
 
-    if(ticks > 100) [ strong-agent ]
+    if(ticks > 100) [strong-agent]
+    if(ticks > 25) [calc-mean-energy]
     if (ticks > 300) [ inoculate-agent ]
-
+    if (ticks > 500) [check-attack]
     delta-poblacion
     registro-funcionamiento
     calculo-umbral
@@ -352,6 +368,36 @@ to strong-agent
 
 
 end
+
+to calc-mean-energy
+
+  if (mean energy_prom > energy_umbral)[set energy_umbral (mean energy_prom)]
+
+end
+
+to check-attack
+
+  ifelse ((energy_umbral - mean (energy_prom)) > energy_epsylon ) [
+    set timer_attack (timer_attack + 1)
+    if(timer_attack > timer_umbral) [
+      ;show "UNDER ATTACK!"
+      set under_attack 1
+      set timer_normality 0
+    ]
+  ]
+  [
+    set timer_normality (timer_normality + 1)
+    if(timer_normality > 25)[
+      ;show "NORMALITY"
+      set under_attack 0
+      set timer_attack 0
+    ]
+  ]
+
+
+end
+
+
 
 to inoculate-agent
 
@@ -715,12 +761,23 @@ to superSet
 
     ask patches with [ pxcor = 0 and pcolor != white][
       foreach particulas [ i ->
-        set energia (energia + 80 - ((position i genes) ^ 2) * 0.085 )
+        set energia (energia + 80 - ((position i genes) ^ 2) * 0.092 )
+        ; 0.087
+      ]
 
+    ]
+
+
+      ifelse (ticks > 25) [
+        set energy_prom fput energia-promedio-algas energy_prom
+        set energy_prom but-last energy_prom
+
+      ]
+      [
+        set energy_prom fput energia-promedio-algas energy_prom
       ]
 
 
-    ]
     ;; el orden de los datos importa mucho
 
     ;;Aplicación del metabolismo
@@ -1113,10 +1170,10 @@ AC
 1
 
 BUTTON
-696
-12
-778
-45
+577
+26
+659
+59
 Inicializar
 setup
 NIL
@@ -1130,10 +1187,10 @@ NIL
 1
 
 BUTTON
-696
-52
-774
-85
+577
+66
+655
+99
 Ejecutar
 go
 T
@@ -1147,8 +1204,8 @@ NIL
 1
 
 PLOT
-756
-219
+657
+181
 1320
 435
 Celdas-Tiempo
@@ -1168,6 +1225,8 @@ PENS
 "banda-inferior-celdas" 1.0 0 -13791810 true "" ""
 "banda-superior-energia" 1.0 0 -1264960 true "" ""
 "banda-inferior-energia" 1.0 0 -3508570 true "" ""
+"umbral energia" 1.0 0 -1184463 true "" "plot energy_umbral"
+"prom-energia-actual" 1.0 0 -16777216 true "" "plot mean energy_prom"
 
 PLOT
 3
@@ -1206,10 +1265,10 @@ PENS
 "diversidad" 1.0 0 -817084 true "" ""
 
 SWITCH
-571
-384
-736
-417
+53
+580
+218
+613
 activar-penalizacion
 activar-penalizacion
 1
@@ -1217,10 +1276,10 @@ activar-penalizacion
 -1000
 
 MONITOR
-601
-231
-725
-276
+524
+234
+648
+279
 Muestras Revisadas
 muestras-revisadas
 17
@@ -1228,10 +1287,10 @@ muestras-revisadas
 11
 
 MONITOR
-579
-336
-724
-381
+502
+339
+647
+384
 Situación
 fuente-datos
 17
@@ -1239,10 +1298,10 @@ fuente-datos
 11
 
 MONITOR
-601
-281
-701
-326
+524
+284
+624
+329
 Entrenamiento?
 Entrenamiento
 17
@@ -1250,20 +1309,20 @@ Entrenamiento
 11
 
 TEXTBOX
-616
-92
-766
-110
+497
+106
+647
+124
 Tabla de Contingencia
 11
 0.0
 1
 
 MONITOR
-605
-133
-662
-178
+528
+136
+585
+181
 NIL
 VP
 17
@@ -1271,10 +1330,10 @@ VP
 11
 
 MONITOR
-665
-133
-722
-178
+588
+136
+645
+181
 NIL
 FP
 17
@@ -1282,10 +1341,10 @@ FP
 11
 
 MONITOR
-605
-180
-662
-225
+528
+183
+585
+228
 NIL
 FN
 17
@@ -1293,10 +1352,10 @@ FN
 11
 
 MONITOR
-666
-180
-723
-225
+589
+183
+646
+228
 NIL
 VN
 17
@@ -1323,10 +1382,10 @@ PENS
 "umbral" 1.0 0 -16448764 true "" ""
 
 MONITOR
-535
-422
-610
-467
+498
+397
+573
+442
 NIL
 sensibilidad
 17
@@ -1334,10 +1393,10 @@ sensibilidad
 11
 
 MONITOR
-620
-423
-703
-468
+500
+455
+583
+500
 NIL
 especificidad
 17
@@ -1378,10 +1437,10 @@ limite-poblacion
 11
 
 BUTTON
-627
-52
-691
-85
+508
+66
+572
+99
 step
 go
 NIL
@@ -1408,8 +1467,8 @@ String
 PLOT
 788
 10
-1320
-214
+1268
+179
 Pheromones
 NIL
 NIL
@@ -1461,6 +1520,39 @@ false
 "" ""
 PENS
 "default" 1.0 0 -16777216 true "" "plot count turtles"
+
+INPUTBOX
+655
+113
+737
+173
+energy_epsylon
+20.0
+1
+0
+Number
+
+INPUTBOX
+660
+46
+768
+106
+timer_umbral
+100.0
+1
+0
+Number
+
+MONITOR
+461
+235
+518
+280
+attack
+under_attack
+17
+1
+11
 
 @#$#@#$#@
 #EL MODELO
