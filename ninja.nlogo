@@ -134,10 +134,7 @@ fin-simulacion
   pher-prom
   Tipo_ataque_value
   List_ss
-  List_vl
-  List_normality
   index_attack
-  index_normality
   energy_prom
   energy_umbral
   energy_actual
@@ -197,16 +194,13 @@ to iniciar-parametros
   set flag_capsule 0
   set pher-prom []
   set List_ss [3906 11276 13516 24053 42895 47190 50392 53060 55934 58180 62381 66405 69666 72447 75490 77508 80265 83190 86985 89178]
-  set List_vl [1001 4001 6501 8501 10251 11751 13001 14101 15151 16176]
-  set List_normality [2000 1500 1000 750 500 250 100 50 25 10]
   set index_attack 0
-  set index_normality 0
   set energy_prom []
   set energy_umbral 0 ;; energy prom anterior
   set energy_actual 0
   set timer_attack 0
   set timer_normality 0
-  set under_attack False
+  set under_attack 0
   ;;Parámetros histograma
 
 
@@ -337,7 +331,7 @@ to go
 
     if(ticks > 100) [strong-agent]
     if(ticks > 25) [calc-mean-energy]
-    ;if (ticks > 300) [ inoculate-agent ]
+    if (ticks > 300) [ inoculate-agent ]
     if (ticks > 500) [check-attack]
     delta-poblacion
     registro-funcionamiento
@@ -387,7 +381,7 @@ to check-attack
     set timer_attack (timer_attack + 1)
     if(timer_attack > timer_umbral) [
       ;show "UNDER ATTACK!"
-      set under_attack True
+      set under_attack 1
       set timer_normality 0
     ]
   ]
@@ -395,7 +389,7 @@ to check-attack
     set timer_normality (timer_normality + 1)
     if(timer_normality > 25)[
       ;show "NORMALITY"
-      set under_attack False
+      set under_attack 0
       set timer_attack 0
     ]
   ]
@@ -593,7 +587,7 @@ to ejecutar-regla-EIA-AB
 
       if ([energia] of patch-at 0 1 = 0)[
         ask patch-at 0 1 [
-          set energia energia-maxima / 3
+          set energia (energia-maxima * 0.5)
           set rand random 53
           set rand2 random 53
           set aux item rand genP
@@ -606,7 +600,7 @@ to ejecutar-regla-EIA-AB
       ]
       if ([energia] of patch-at 0 -1 = 0)[
         ask patch-at 0 -1 [
-          set energia energia-maxima / 3
+          set energia (energia-maxima * 0.5)
           set rand random 53
           set rand2 random 53
           set aux item rand genP
@@ -617,7 +611,8 @@ to ejecutar-regla-EIA-AB
           set cont_rep cont_rep + 1
         ]
       ]
-      if ([energia] of patch-at 0 1 > 0)[ask patch-at 0 1 [set energia energia-maxima]]
+      ;if ([energia] of patch-at 0 1 > 0)[ask patch-at 0 1 [set energia energia-maxima]]
+      ;if ([energia] of patch-at 0 1 > 0)[ask patch-at 0 1 [set energia (energia + ([energia] of myself) * 0.5)]]
 
       set energia energia-maxima / 3
     ]
@@ -658,7 +653,7 @@ to penalizar-similares
     if (Matches > 50)[
       ;show "energia anterior:"
       ;show energia
-      set energia (energia - 83 * 1.20)
+      set energia (energia * 0.5)
       ;show "energia actual:"
       ;show energia
     ]
@@ -684,11 +679,7 @@ to cargar-datos
 
   if(Tipo_ataque = "variedLength")[
     ;show "Distintos Ataques"
-    variedLength
-  ]
-  if(Tipo_ataque = "modified_variedLength")[
-    ;show "Distintos Ataques"
-    modified_variedLength
+
   ]
 
   if(Tipo_ataque = "superSet")[
@@ -715,221 +706,7 @@ end
 
 to variedLength
 
-if ( (flag-par = 1) and (not (file-at-end?))  ) [ ;; hay lineas en el archivo que leer
 
-
-    set lineas-leidas lineas-leidas + 1
-
-    ;; se trabaja como string se deben individualizar los datos y usar reglas para generar breeds sedimientos (en las reglas se puede manejar estados multiples y otras discretizaciones
-    ;; luego de generar los sedimentos "nuevos" se procede con las herramientas de an�lisis
-    ;; eventualmente cambiar preNN.pl para facilitar la lectura de datos
-
-
-
-    set caracteristicas-archivo  (sentence    list file-read file-read  file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read
-      file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read
-      file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read)
-
-    ifelse ((item 54 caracteristicas-archivo) > 0) [set ataque 400 ] [set ataque 0]
-
-    ;; Esta versión carga las características que son binarias al flujo
-    ;;"puertoOrigen_0,puertoDestino_1,protocolo_2,TTL_3,TOS_4,IPLen_5,DgmLen_6,RB_7,MF_8,DF_9,opcionesIP_10,F1_11,F2_12,U_13,A_14,P_15,R_16,S_17,F_18,Win_19,
-    ;;TcpLen_20,opcionesTCP_21,UDPLen_22,Type_23,Code_24,telnet_25,ssh_26,ftp_27,netbios_28,rlogin_29,rpc_30,nfs_31,lockd_32,netbiosWinNT_33,Xwin_34,dns_35,
-    ;;ldap_36,smtp_37,pop_38,imap_39,http_40,ssl_41,px_42,serv_43,time_44,tftp_45,finger_46,nntp_47,ntp_48,lpd_49,syslog_50,snmp_51,bgp_52,socks_53\n"
-
-    ;; configuraci�n binaria
-    set indice-caracteristicas-utilizadas [7 8 9 11 12 13 14 15 16 17 18 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53]
-
-
-    ;; determinando el número de características presentes (binario)
-
-    let contador-caracteristicas-activas 0
-    set particulas[]
-    foreach indice-caracteristicas-utilizadas [ ?1 ->
-
-      if ((item ?1 caracteristicas-archivo) > 0)
-      [
-        set contador-caracteristicas-activas (contador-caracteristicas-activas + 1)
-        set particulas lput ?1 particulas
-
-
-
-      ]
-
-    ]
-
-    ;;Alimentar celdas (agentes)
-
-    ask patches with [ pxcor = 0 and pcolor != white][
-      foreach particulas [ i ->
-        set energia (energia + 80 - ((position i genes) ^ 2) * 0.092 )
-        ; 0.087
-      ]
-
-    ]
-
-
-      ifelse (ticks > 25) [
-        set energy_prom fput energia-promedio-algas energy_prom
-        set energy_prom but-last energy_prom
-
-      ]
-      [
-        set energy_prom fput energia-promedio-algas energy_prom
-      ]
-
-
-    ;; el orden de los datos importa mucho
-
-    ;;Aplicación del metabolismo
-
-  ] ;;cierre de if de verificación de archivo
-
-  if ((flag-par = 1) and index_attack > 19)
-  [
-      set fin-simulacion true
-      stop
-  ]
-
-  if((flag-par = 1) and ( ticks > (  item index_attack List_vl + (item index_normality List_normality))  ))[
-    show "Back to normal!"
-    set index_attack index_attack + 1
-    set index_normality index_normality + 1
-    set fuente-datos-bin 0
-  ]
-  if((flag-par = 1) and ( ticks =  (  item index_attack List_vl )))[
-  show "Under Attack!"
-  set fuente-datos-bin 1
-  ]
-
-  if((flag-par = 1) and ticks = 1000)[
-    show "End of Training"
-  ]
-
-    ;;Primera tanda de ataques de Denegacion de Servicio
-    if ( flag-par = 0 )
-    [
-      set nombre-archivo archivoAtaque
-
-      file-open nombre-archivo
-      set fuente-datos nombre-archivo
-      set fuente-datos-bin 0
-      set archivos-procesados (archivos-procesados + 1)
-      set lineas-leidas 0
-      set flag-par 1
-
-    ]
-
-
-
-end
-
-to modified_variedLength
-
-if ( (flag-par = 1) and (not (file-at-end?))  ) [ ;; hay lineas en el archivo que leer
-
-
-    set lineas-leidas lineas-leidas + 1
-
-    ;; se trabaja como string se deben individualizar los datos y usar reglas para generar breeds sedimientos (en las reglas se puede manejar estados multiples y otras discretizaciones
-    ;; luego de generar los sedimentos "nuevos" se procede con las herramientas de an�lisis
-    ;; eventualmente cambiar preNN.pl para facilitar la lectura de datos
-
-
-
-    set caracteristicas-archivo  (sentence    list file-read file-read  file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read
-      file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read
-      file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read)
-
-    ifelse ((item 54 caracteristicas-archivo) > 0) [set ataque 400 ] [set ataque 0]
-
-    ;; Esta versión carga las características que son binarias al flujo
-    ;;"puertoOrigen_0,puertoDestino_1,protocolo_2,TTL_3,TOS_4,IPLen_5,DgmLen_6,RB_7,MF_8,DF_9,opcionesIP_10,F1_11,F2_12,U_13,A_14,P_15,R_16,S_17,F_18,Win_19,
-    ;;TcpLen_20,opcionesTCP_21,UDPLen_22,Type_23,Code_24,telnet_25,ssh_26,ftp_27,netbios_28,rlogin_29,rpc_30,nfs_31,lockd_32,netbiosWinNT_33,Xwin_34,dns_35,
-    ;;ldap_36,smtp_37,pop_38,imap_39,http_40,ssl_41,px_42,serv_43,time_44,tftp_45,finger_46,nntp_47,ntp_48,lpd_49,syslog_50,snmp_51,bgp_52,socks_53\n"
-
-    ;; configuraci�n binaria
-    set indice-caracteristicas-utilizadas [7 8 9 11 12 13 14 15 16 17 18 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53]
-
-
-    ;; determinando el número de características presentes (binario)
-
-    let contador-caracteristicas-activas 0
-    set particulas[]
-    foreach indice-caracteristicas-utilizadas [ ?1 ->
-
-      if ((item ?1 caracteristicas-archivo) > 0)
-      [
-        set contador-caracteristicas-activas (contador-caracteristicas-activas + 1)
-        set particulas lput ?1 particulas
-
-
-
-      ]
-
-    ]
-
-    ;;Alimentar celdas (agentes)
-
-    ask patches with [ pxcor = 0 and pcolor != white][
-      foreach particulas [ i ->
-        set energia (energia + 80 - ((position i genes) ^ 2) * 0.092 )
-        ; 0.087
-      ]
-
-    ]
-
-
-      ifelse (ticks > 25) [
-        set energy_prom fput energia-promedio-algas energy_prom
-        set energy_prom but-last energy_prom
-
-      ]
-      [
-        set energy_prom fput energia-promedio-algas energy_prom
-      ]
-
-
-    ;; el orden de los datos importa mucho
-
-    ;;Aplicación del metabolismo
-
-  ] ;;cierre de if de verificación de archivo
-
-  if ((flag-par = 1) and index_attack > 19)
-  [
-      set fin-simulacion true
-      stop
-  ]
-
-  if((flag-par = 1) and ( ticks > (  item index_attack List_vl + (item index_normality List_normality) + 1000)  ))[
-    show "Back to normal!"
-    set index_attack index_attack + 1
-    set index_normality index_normality + 1
-    set fuente-datos-bin 0
-  ]
-  if((flag-par = 1) and ( ticks =  ((  item index_attack List_vl ) + 1000 )))[
-  show "Under Attack!"
-  set fuente-datos-bin 1
-  ]
-
-  if((flag-par = 1) and ticks = 2000)[
-    show "End of Training"
-  ]
-
-    ;;Primera tanda de ataques de Denegacion de Servicio
-    if ( flag-par = 0 )
-    [
-      set nombre-archivo archivoAtaque
-
-      file-open nombre-archivo
-      set fuente-datos nombre-archivo
-      set fuente-datos-bin 0
-      set archivos-procesados (archivos-procesados + 1)
-      set lineas-leidas 0
-      set flag-par 1
-
-    ]
 
 
 
@@ -987,6 +764,8 @@ to superSet
       foreach particulas [ i ->
         set energia (energia + 80 - ((position i genes) ^ 2) * 0.092 )
         ; 0.087
+        if ([energia] of patch-at 0 1 > 0)[ask patch-at 0 1 [set energia (energia + (([energia] of myself) * 0.1))]]
+        if ([energia] of patch-at 0 -1 > 0)[ask patch-at 0 -1 [set energia (energia + (([energia] of myself) * 0.1))]]
       ]
 
     ]
@@ -1311,48 +1090,20 @@ to verificar-ataque
 
 end
 
+
+
 to tabla-contingencia
   if ( ticks > ventana-entrenamiento)
   [
     ;;if (ataque-detectado) [set contador-alertas (contador-alertas+1)]
     set entrenamiento "clasificando"
     ;;Momento para intervenir si se considera congelar la evolución
-    let onAttackInterval False
-
-    if (tipo_ataque = "superSet")[
-      ifelse (ticks > (item index_attack List_ss) and ticks <= (item index_attack List_ss + 2000) )[
-        set onAttackInterval True
-      ]
-      [
-        set onAttackInterval False
-      ]
-    ]
-
-    if (tipo_ataque = "variedLength")[
-      ifelse (ticks > (item index_attack List_vl) and ticks <= (item index_attack List_vl + (item index_normality List_normality)) )[
-        set onAttackInterval True
-      ]
-      [
-        set onAttackInterval False
-      ]
-    ]
-
-    if (tipo_ataque = "modified_variedLength")[
-      ifelse (ticks > (item index_attack List_ss + 1000) and ticks <= (item index_attack List_ss + 3000) )[
-        set onAttackInterval True
-      ]
-      [
-        set onAttackInterval False
-      ]
-    ]
-
-
 
     ;;Muestreo Unitario, válido para calibración de parámetros basado en paquete a paquete
-    if (( onAttackInterval ) and (under_attack)) [set VP (VP + 1)]
-    if (( onAttackInterval ) and (not under_attack)) [set FN (FN + 1)]
-    if (( not onAttackInterval ) and (not under_attack)) [set VN (VN + 1)]
-    if (( not onAttackInterval ) and (under_attack)) [set FP (FP + 1)]
+    if (( fuente-datos-bin = 1 ) and (ataque-detectado)) [set VP (VP + 1)]
+    if (( fuente-datos-bin = 1 ) and (not ataque-detectado)) [set FN (FN + 1)]
+    if (( fuente-datos-bin = 0 ) and (not ataque-detectado)) [set VN (VN + 1)]
+    if (( fuente-datos-bin = 0 ) and (ataque-detectado)) [set FP (FP + 1)]
 
 
     ;; Calculando Sensibilidad y Especificidad
@@ -1711,7 +1462,7 @@ INPUTBOX
 484
 572
 archivoAtaque
-modified_variedLength01
+superSet01
 1
 0
 String
@@ -1748,12 +1499,12 @@ String
 CHOOSER
 60
 517
-234
+233
 562
 Tipo_ataque
 Tipo_ataque
-"variedLength" "superSet" "Modified_variedLength" "Distintos Ataques"
-2
+"variedLength" "superSet" "Ataques Esporadicos" "Distintos Ataques"
+1
 
 PLOT
 274
@@ -2301,7 +2052,7 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 6.1.0
+NetLogo 6.0.2
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
