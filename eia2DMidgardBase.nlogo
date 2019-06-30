@@ -681,15 +681,16 @@ end
 
 to cargar-datos
 
+  if(Tipo_ataque = "modified_variedLength")[
+    ;show "Distintos Ataques"
+    modified_variedLength
+  ]
 
   if(Tipo_ataque = "variedLength")[
     ;show "Distintos Ataques"
     variedLength
   ]
-  if(Tipo_ataque = "modified_variedLength")[
-    ;show "Distintos Ataques"
-    modified_variedLength
-  ]
+
 
   if(Tipo_ataque = "superSet")[
     ;show "Distintos Ataques"
@@ -700,13 +701,6 @@ to cargar-datos
     ;show "Distintos Ataques"
     cargar-datos2
   ]
-
-
-  if(Tipo_ataque = "Ataques Esporadicos")[
-    ;show "Ataques Esporadicos"
-    cargar-datos3
-  ]
-
 
 
 
@@ -769,7 +763,7 @@ if ( (flag-par = 1) and (not (file-at-end?))  ) [ ;; hay lineas en el archivo qu
     ]
 
 
-      ifelse (ticks > 25) [
+      ifelse (ticks > normality_umbral ) [
         set energy_prom fput energia-promedio-algas energy_prom
         set energy_prom but-last energy_prom
 
@@ -880,7 +874,7 @@ if ( (flag-par = 1) and (not (file-at-end?))  ) [ ;; hay lineas en el archivo qu
     ]
 
 
-      ifelse (ticks > 25) [
+      ifelse (ticks > normality_umbral ) [
         set energy_prom fput energia-promedio-algas energy_prom
         set energy_prom but-last energy_prom
 
@@ -992,7 +986,7 @@ to superSet
     ]
 
 
-      ifelse (ticks > 25) [
+      ifelse (ticks > normality_umbral ) [
         set energy_prom fput energia-promedio-algas energy_prom
         set energy_prom but-last energy_prom
 
@@ -1048,7 +1042,7 @@ end
 
 
 to cargar-datos2  ;;version con carga de datos desde archivo
-  ifelse ( (lineas-leidas < 950) and (not (file-at-end?))  ) [ ;; hay lineas en el archivo que leer
+  ifelse ( (lineas-leidas < 1000) and (not (file-at-end?))  ) [ ;; hay lineas en el archivo que leer
 
 
     set lineas-leidas lineas-leidas + 1
@@ -1097,9 +1091,16 @@ to cargar-datos2  ;;version con carga de datos desde archivo
       foreach particulas [ i ->
         set energia (energia + 83 - position i genes * 2.9)
       ]
-
-
     ]
+
+    ifelse (ticks > normality_umbral ) [
+        set energy_prom fput energia-promedio-algas energy_prom
+        set energy_prom but-last energy_prom
+
+      ]
+      [
+        set energy_prom fput energia-promedio-algas energy_prom
+      ]
     ;; el orden de los datos importa mucho
 
     ;;Aplicación del metabolismo
@@ -1110,7 +1111,7 @@ to cargar-datos2  ;;version con carga de datos desde archivo
     if (flag-par = 1)
     [
       set rounds (rounds + 1)
-      ifelse rounds >= 2 [
+      ifelse rounds >= 4 [
         set fin-simulacion true
         stop
       ]
@@ -1119,6 +1120,7 @@ to cargar-datos2  ;;version con carga de datos desde archivo
         set fuente-datos "datosNormalesEIA3000.dat"
         set nombre-archivo "datosNormalesEIA3000.dat"
         set lineas-leidas 0
+        set fuente-datos-bin 0
         ifelse(Tipo_ataque_value = 0)
       [
         set Tipo_ataque_value 1
@@ -1141,101 +1143,6 @@ to cargar-datos2  ;;version con carga de datos desde archivo
         set nombre-archivo archivoAtaque2
       ]
       show nombre-archivo
-
-      file-open nombre-archivo
-      set fuente-datos nombre-archivo
-      set fuente-datos-bin 1
-      set archivos-procesados (archivos-procesados + 1)
-      set lineas-leidas 0
-
-    ]
-
-    ifelse (flag-par = 0 )
-    [set flag-par 1]
-    [set flag-par 0]
-  ]
-end
-
-to cargar-datos3  ;;version con carga de datos desde archivo -- Ataques Esporadicos
-  ifelse ( (lineas-leidas < 300) and (not (file-at-end?))  ) [ ;; hay lineas en el archivo que leer
-
-
-    set lineas-leidas lineas-leidas + 1
-
-    ;; se trabaja como string se deben individualizar los datos y usar reglas para generar breeds sedimientos (en las reglas se puede manejar estados multiples y otras discretizaciones
-    ;; luego de generar los sedimentos "nuevos" se procede con las herramientas de an�lisis
-    ;; eventualmente cambiar preNN.pl para facilitar la lectura de datos
-
-
-
-    set caracteristicas-archivo  (sentence    list file-read file-read  file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read
-      file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read
-      file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read)
-
-    ifelse ((item 54 caracteristicas-archivo) > 0) [set ataque 400 ] [set ataque 0]
-
-    ;; Esta versión carga las características que son binarias al flujo
-    ;;"puertoOrigen_0,puertoDestino_1,protocolo_2,TTL_3,TOS_4,IPLen_5,DgmLen_6,RB_7,MF_8,DF_9,opcionesIP_10,F1_11,F2_12,U_13,A_14,P_15,R_16,S_17,F_18,Win_19,
-    ;;TcpLen_20,opcionesTCP_21,UDPLen_22,Type_23,Code_24,telnet_25,ssh_26,ftp_27,netbios_28,rlogin_29,rpc_30,nfs_31,lockd_32,netbiosWinNT_33,Xwin_34,dns_35,
-    ;;ldap_36,smtp_37,pop_38,imap_39,http_40,ssl_41,px_42,serv_43,time_44,tftp_45,finger_46,nntp_47,ntp_48,lpd_49,syslog_50,snmp_51,bgp_52,socks_53\n"
-
-    ;; configuraci�n binaria
-    set indice-caracteristicas-utilizadas [7 8 9 11 12 13 14 15 16 17 18 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53]
-
-
-    ;; determinando el número de características presentes (binario)
-
-    let contador-caracteristicas-activas 0
-    set particulas[]
-    foreach indice-caracteristicas-utilizadas [ ?1 ->
-
-      if ((item ?1 caracteristicas-archivo) > 0)
-      [
-        set contador-caracteristicas-activas (contador-caracteristicas-activas + 1)
-        set particulas lput ?1 particulas
-
-
-
-      ]
-
-    ]
-
-    ;;Alimentar celdas (agentes)
-
-    ask patches with [ pxcor = 0 and pcolor != white][
-      foreach particulas [ i ->
-        set energia (energia + 83 - position i genes * 2.9)
-      ]
-
-
-    ]
-    ;; el orden de los datos importa mucho
-
-    ;;Aplicación del metabolismo
-
-  ] ;;cierre de if de verificación de archivo
-
-  [
-    if (flag-par = 1)
-    [
-      set rounds (rounds + 1)
-      ifelse rounds >= 6 [
-        set fin-simulacion true
-        stop
-      ]
-      [
-        file-open "datosNormalesEIA3000.dat"
-        set fuente-datos "datosNormalesEIA3000.dat"
-        set nombre-archivo "datosNormalesEIA3000.dat"
-        set lineas-leidas 0
-        show "Back to normal!"
-      ]
-    ]
-
-    ;;Primera tanda de ataques de Denegacion de Servicio
-    if ( flag-par = 0 )
-    [
-      set nombre-archivo archivoAtaque
 
       file-open nombre-archivo
       set fuente-datos nombre-archivo
@@ -1338,7 +1245,15 @@ to tabla-contingencia
     ]
 
     if (tipo_ataque = "modified_variedLength")[
-      ifelse (ticks > (item index_attack List_ss + 1000) and ticks <= (item index_attack List_ss + 3000) )[
+      ifelse (ticks > (item index_attack List_vl + 1000) and ticks <= (item index_attack List_vl + (item index_normality List_normality) + 1000) )[
+        set onAttackInterval True
+      ]
+      [
+        set onAttackInterval False
+      ]
+    ]
+    if (tipo_ataque = "Distintos Ataques")[
+      ifelse (fuente-datos-bin = 1)[
         set onAttackInterval True
       ]
       [
@@ -1422,10 +1337,10 @@ AC
 1
 
 BUTTON
-577
-26
-659
-59
+513
+35
+595
+68
 Inicializar
 setup
 NIL
@@ -1439,10 +1354,10 @@ NIL
 1
 
 BUTTON
-577
-66
-655
-99
+515
+71
+593
+104
 Ejecutar
 go
 T
@@ -1456,7 +1371,7 @@ NIL
 1
 
 PLOT
-657
+646
 181
 1320
 435
@@ -1481,10 +1396,10 @@ PENS
 "prom-energia-actual" 1.0 0 -16777216 true "" "plot mean energy_prom"
 
 PLOT
-3
-12
-232
-253
+45
+51
+274
+292
 Variabilidad-Genetica
 Especímenes
 Cantidad
@@ -1528,10 +1443,10 @@ activar-penalizacion
 -1000
 
 MONITOR
-524
-234
-648
-279
+498
+233
+622
+278
 Muestras Revisadas
 muestras-revisadas
 17
@@ -1539,10 +1454,10 @@ muestras-revisadas
 11
 
 MONITOR
-502
-339
-647
-384
+497
+340
+642
+385
 Situación
 fuente-datos
 17
@@ -1550,10 +1465,10 @@ fuente-datos
 11
 
 MONITOR
-524
-284
-624
-329
+509
+287
+609
+332
 Entrenamiento?
 Entrenamiento
 17
@@ -1571,10 +1486,10 @@ Tabla de Contingencia
 1
 
 MONITOR
-528
-136
-585
-181
+498
+131
+555
+176
 NIL
 VP
 17
@@ -1582,10 +1497,10 @@ VP
 11
 
 MONITOR
-588
-136
-645
-181
+558
+131
+615
+176
 NIL
 FP
 17
@@ -1593,10 +1508,10 @@ FP
 11
 
 MONITOR
-528
-183
-585
-228
+498
+178
+555
+223
 NIL
 FN
 17
@@ -1604,10 +1519,10 @@ FN
 11
 
 MONITOR
-589
-183
-646
-228
+559
+178
+616
+223
 NIL
 VN
 17
@@ -1689,10 +1604,10 @@ limite-poblacion
 11
 
 BUTTON
-508
-66
-572
-99
+445
+35
+509
+68
 step
 go
 NIL
@@ -1711,16 +1626,16 @@ INPUTBOX
 484
 572
 archivoAtaque
-modified_variedLength01
+Switch-00
 1
 0
 String
 
 PLOT
-788
+838
 10
-1268
-179
+1284
+177
 Pheromones
 NIL
 NIL
@@ -1752,14 +1667,14 @@ CHOOSER
 562
 Tipo_ataque
 Tipo_ataque
-"variedLength" "superSet" "Modified_variedLength" "Distintos Ataques"
-2
+"variedLength" "superSet" "modified_variedLength" "Distintos Ataques"
+3
 
 PLOT
-274
-72
-474
-222
+294
+84
+494
+234
 Variedad energia
 NIL
 NIL
@@ -1774,21 +1689,21 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot count turtles"
 
 INPUTBOX
-655
-113
-737
-173
+638
+116
+720
+176
 energy_epsylon
-20.0
+18.0
 1
 0
 Number
 
 INPUTBOX
-660
-46
-768
-106
+725
+53
+833
+113
 timer_umbral
 100.0
 1
@@ -1796,15 +1711,26 @@ timer_umbral
 Number
 
 MONITOR
-461
-235
-518
-280
+407
+254
+464
+299
 attack
 under_attack
 17
 1
 11
+
+INPUTBOX
+725
+115
+834
+178
+normality_umbral
+25.0
+1
+0
+Number
 
 @#$#@#$#@
 #EL MODELO
