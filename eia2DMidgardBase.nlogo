@@ -779,11 +779,6 @@ if ( (flag-par = 1) and (not (file-at-end?))  ) [ ;; hay lineas en el archivo qu
 
   ] ;;cierre de if de verificación de archivo
 
-  if ((flag-par = 1) and index_attack > 19)
-  [
-      set fin-simulacion true
-      stop
-  ]
 
   if((flag-par = 1) and ( ticks > (  item index_attack List_vl + (item index_normality List_normality))  ))[
     show "Back to normal!"
@@ -890,7 +885,7 @@ if ( (flag-par = 1) and (not (file-at-end?))  ) [ ;; hay lineas en el archivo qu
 
   ] ;;cierre de if de verificación de archivo
 
-  if ((flag-par = 1) and index_attack > 19)
+  if ((flag-par = 1) and index_attack > 9)
   [
       set fin-simulacion true
       stop
@@ -898,7 +893,7 @@ if ( (flag-par = 1) and (not (file-at-end?))  ) [ ;; hay lineas en el archivo qu
 
   if((flag-par = 1) and ( ticks > (  item index_attack List_vl + (item index_normality List_normality) + 1000)  ))[
     show "Back to normal!"
-    set index_attack index_attack + 1
+    if (index_attack < 10) [set index_attack index_attack + 1]
     set index_normality index_normality + 1
     set fuente-datos-bin 0
   ]
@@ -1443,10 +1438,10 @@ activar-penalizacion
 -1000
 
 MONITOR
-498
-233
-622
-278
+499
+570
+623
+615
 Muestras Revisadas
 muestras-revisadas
 17
@@ -1454,10 +1449,10 @@ muestras-revisadas
 11
 
 MONITOR
-497
-340
-642
-385
+500
+464
+645
+509
 Situación
 fuente-datos
 17
@@ -1465,10 +1460,10 @@ fuente-datos
 11
 
 MONITOR
-509
-287
-609
-332
+499
+625
+599
+670
 Entrenamiento?
 Entrenamiento
 17
@@ -1476,20 +1471,20 @@ Entrenamiento
 11
 
 TEXTBOX
-497
-106
-647
-124
+511
+115
+661
+133
 Tabla de Contingencia
 11
 0.0
 1
 
 MONITOR
-498
-131
-555
-176
+506
+132
+563
+177
 NIL
 VP
 17
@@ -1497,10 +1492,10 @@ VP
 11
 
 MONITOR
-558
-131
-615
-176
+566
+132
+623
+177
 NIL
 FP
 17
@@ -1508,10 +1503,10 @@ FP
 11
 
 MONITOR
-498
-178
-555
-223
+506
+179
+563
+224
 NIL
 FN
 17
@@ -1519,10 +1514,10 @@ FN
 11
 
 MONITOR
-559
-178
-616
-223
+567
+179
+624
+224
 NIL
 VN
 17
@@ -1549,10 +1544,10 @@ PENS
 "umbral" 1.0 0 -16448764 true "" ""
 
 MONITOR
-498
-397
-573
-442
+497
+234
+564
+279
 NIL
 sensibilidad
 17
@@ -1560,10 +1555,10 @@ sensibilidad
 11
 
 MONITOR
-500
-455
-583
-500
+567
+234
+640
+279
 NIL
 especificidad
 17
@@ -1571,10 +1566,10 @@ especificidad
 11
 
 MONITOR
-592
-474
-704
-519
+241
+654
+353
+699
 NIL
 fuente-datos-bin
 17
@@ -1582,10 +1577,10 @@ fuente-datos-bin
 11
 
 MONITOR
-590
-524
-677
-569
+241
+707
+328
+752
 NIL
 limite-energia
 17
@@ -1593,10 +1588,10 @@ limite-energia
 11
 
 MONITOR
-488
-525
-585
-570
+499
+511
+596
+556
 NIL
 limite-poblacion
 17
@@ -1689,21 +1684,21 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot count turtles"
 
 INPUTBOX
-638
-116
-720
-176
+521
+280
+606
+340
 energy_epsylon
-18.0
+19.0
 1
 0
 Number
 
 INPUTBOX
-725
-53
-833
-113
+510
+341
+618
+401
 timer_umbral
 100.0
 1
@@ -1722,12 +1717,12 @@ under_attack
 11
 
 INPUTBOX
-725
-115
-834
-178
+511
+400
+618
+460
 normality_umbral
-25.0
+50.0
 1
 0
 Number
@@ -2351,6 +2346,123 @@ NetLogo 6.1.0
     </enumeratedValueSet>
     <enumeratedValueSet variable="activar-penalizacion">
       <value value="true"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="experiment" repetitions="1" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <metric>count turtles</metric>
+    <enumeratedValueSet variable="energy_epsylon">
+      <value value="18"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="timer_umbral">
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="normality_umbral">
+      <value value="25"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="archivoAtaque">
+      <value value="&quot;superSet01&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="activar-penalizacion">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Tipo_ataque">
+      <value value="&quot;superSet&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="ArchivoAtaque2">
+      <value value="&quot;Tor-00&quot;"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="Superset" repetitions="1" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="26052"/>
+    <metric>sensibilidad + especificidad</metric>
+    <steppedValueSet variable="energy_epsylon" first="17" step="1" last="22"/>
+    <steppedValueSet variable="timer_umbral" first="50" step="25" last="100"/>
+    <enumeratedValueSet variable="normality_umbral">
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="archivoAtaque">
+      <value value="&quot;superSet01&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="activar-penalizacion">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Tipo_ataque">
+      <value value="&quot;superSet&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="ArchivoAtaque2">
+      <value value="&quot;Tor-00&quot;"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="variedLength" repetitions="1" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="16184"/>
+    <metric>sensibilidad + especificidad</metric>
+    <steppedValueSet variable="energy_epsylon" first="17" step="1" last="22"/>
+    <steppedValueSet variable="timer_umbral" first="50" step="25" last="100"/>
+    <enumeratedValueSet variable="normality_umbral">
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="archivoAtaque">
+      <value value="&quot;variedLength01&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="activar-penalizacion">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Tipo_ataque">
+      <value value="&quot;variedLength&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="ArchivoAtaque2">
+      <value value="&quot;Tor-00&quot;"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="variedLength02" repetitions="1" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="16873"/>
+    <metric>sensibilidad + especificidad</metric>
+    <steppedValueSet variable="energy_epsylon" first="17" step="1" last="22"/>
+    <steppedValueSet variable="timer_umbral" first="50" step="25" last="100"/>
+    <enumeratedValueSet variable="normality_umbral">
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="archivoAtaque">
+      <value value="&quot;modified_variedLength01&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="activar-penalizacion">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Tipo_ataque">
+      <value value="&quot;modified_variedLength&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="ArchivoAtaque2">
+      <value value="&quot;Tor-00&quot;"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="variedAttack" repetitions="2" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <metric>sensibilidad + especificidad</metric>
+    <steppedValueSet variable="energy_epsylon" first="17" step="1" last="22"/>
+    <steppedValueSet variable="timer_umbral" first="50" step="25" last="100"/>
+    <enumeratedValueSet variable="normality_umbral">
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="archivoAtaque">
+      <value value="&quot;Switch-00&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="activar-penalizacion">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Tipo_ataque">
+      <value value="&quot;Distintos Ataques&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="ArchivoAtaque2">
+      <value value="&quot;Tor-00&quot;"/>
     </enumeratedValueSet>
   </experiment>
 </experiments>
