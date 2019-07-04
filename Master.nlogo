@@ -20,19 +20,21 @@ to setup
   ]
    ls:ask nonself_model[
     setup
-    set archivoAtaque "Tor-00"
   ]
-
+  ls:assign nonself_model isInLevelSpace True
   ls:show ls:models
-
+  ls:assign nonself_model pheromones [ pheromones ] ls:of self_model
   reset-ticks
 end
 
 to go
 
 
+
+  ls:ask self_model [go]
   ls:assign nonself_model pheromones [ pheromones ] ls:of self_model
-  ls:ask ls:models [go]
+  ls:assign nonself_model importantFeatureIndex [ caracteristicas-archivo ] ls:of self_model
+  ls:ask nonself_model [go]
 
 
 
@@ -44,8 +46,6 @@ to go
   tick
 
 end
-
-
 
 @#$#@#$#@
 GRAPHICS-WINDOW

@@ -130,8 +130,20 @@ fin-simulacion
   pob-delta
   pheromones
   cryogenic-capsule
+  flag_capsule
   pher-prom
   Tipo_ataque_value
+  List_ss
+  List_vl
+  List_normality
+  index_attack
+  index_normality
+  energy_prom
+  energy_umbral
+  energy_actual
+  timer_attack
+  timer_normality
+  under_attack
  ]
 
 ;; celdas tienen energía asociada y vector genético
@@ -182,7 +194,19 @@ to iniciar-parametros
   set pob-delta  0
   set pheromones 0
   set cryogenic-capsule []
+  set flag_capsule 0
   set pher-prom []
+  set List_ss [3906 11276 13516 24053 42895 47190 50392 53060 55934 58180 62381 66405 69666 72447 75490 77508 80265 83190 86985 89178]
+  set List_vl [1001 4001 6501 8501 10251 11751 13001 14101 15151 16176]
+  set List_normality [2000 1500 1000 750 500 250 100 50 25 10]
+  set index_attack 0
+  set index_normality 0
+  set energy_prom []
+  set energy_umbral 0 ;; energy prom anterior
+  set energy_actual 0
+  set timer_attack 0
+  set timer_normality 0
+  set under_attack False
   ;;Parámetros histograma
 
 
@@ -299,18 +323,22 @@ to go
     ifelse (ticks > 100) [
       set pher-prom fput pheromones pher-prom
       set pher-prom but-last pher-prom
+
     ]
     [
       set pher-prom fput pheromones pher-prom
     ]
 
+
+
     ;show pher-prom
     ;show "--"
 
 
-    if(ticks > 100) [ strong-agent ]
-    if (ticks > 300) [ inoculate-agent ]
-
+    if(ticks > 100) [strong-agent]
+    if(ticks > 25) [calc-mean-energy]
+    ;if (ticks > 300) [ inoculate-agent ]
+    if (ticks > 500) [check-attack]
     delta-poblacion
     registro-funcionamiento
     calculo-umbral
@@ -337,7 +365,8 @@ to strong-agent
   ;show "--"
  ; show mean pher-prom
   if (mean pher-prom > 0 and mean pher-prom < 0.15)[
-    show "Getting strong agent"
+    ;show "Getting strong agent"
+    set flag_capsule 1
      ask max-n-of 50 patches with [pxcor = 0] [energia][
       set cryogenic-capsule lput genes cryogenic-capsule
     ]
@@ -346,9 +375,39 @@ to strong-agent
 
 end
 
+to calc-mean-energy
+
+  if (mean energy_prom > energy_umbral)[set energy_umbral (mean energy_prom)]
+
+end
+
+to check-attack
+
+  ifelse ((energy_umbral - mean (energy_prom)) > energy_epsylon ) [
+    set timer_attack (timer_attack + 1)
+    if(timer_attack > timer_umbral) [
+      ;show "UNDER ATTACK!"
+      set under_attack True
+      set timer_normality 0
+    ]
+  ]
+  [
+    set timer_normality (timer_normality + 1)
+    if(timer_normality > 25)[
+      ;show "NORMALITY"
+      set under_attack False
+      set timer_attack 0
+    ]
+  ]
+
+
+end
+
+
+
 to inoculate-agent
 
-  if(pob-delta < -5)[
+  if(pob-delta < -5 and flag_capsule = 1)[
     show "Inoculate"
     foreach cryogenic-capsule[ i ->
       ask one-of ( patches with [pxcor = 0] ) [
@@ -534,7 +593,7 @@ to ejecutar-regla-EIA-AB
 
       if ([energia] of patch-at 0 1 = 0)[
         ask patch-at 0 1 [
-          set energia 50
+          set energia energia-maxima / 3
           set rand random 53
           set rand2 random 53
           set aux item rand genP
@@ -547,7 +606,7 @@ to ejecutar-regla-EIA-AB
       ]
       if ([energia] of patch-at 0 -1 = 0)[
         ask patch-at 0 -1 [
-          set energia 50
+          set energia energia-maxima / 3
           set rand random 53
           set rand2 random 53
           set aux item rand genP
@@ -622,24 +681,363 @@ end
 
 to cargar-datos
 
+  if(Tipo_ataque = "modified_variedLength")[
+    ;show "Distintos Ataques"
+    modified_variedLength
+  ]
+
+  if(Tipo_ataque = "variedLength")[
+    ;show "Distintos Ataques"
+    variedLength
+  ]
+
+
+  if(Tipo_ataque = "superSet")[
+    ;show "Distintos Ataques"
+    superSet
+  ]
+
   if(Tipo_ataque = "Distintos Ataques")[
     ;show "Distintos Ataques"
     cargar-datos2
   ]
 
 
-  if(Tipo_ataque = "Ataques Esporadicos")[
-    ;show "Ataques Esporadicos"
-    cargar-datos3
+
+end
+
+
+to variedLength
+
+if ( (flag-par = 1) and (not (file-at-end?))  ) [ ;; hay lineas en el archivo que leer
+
+
+    set lineas-leidas lineas-leidas + 1
+
+    ;; se trabaja como string se deben individualizar los datos y usar reglas para generar breeds sedimientos (en las reglas se puede manejar estados multiples y otras discretizaciones
+    ;; luego de generar los sedimentos "nuevos" se procede con las herramientas de an�lisis
+    ;; eventualmente cambiar preNN.pl para facilitar la lectura de datos
+
+
+
+    set caracteristicas-archivo  (sentence    list file-read file-read  file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read
+      file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read
+      file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read)
+
+    ifelse ((item 54 caracteristicas-archivo) > 0) [set ataque 400 ] [set ataque 0]
+
+    ;; Esta versión carga las características que son binarias al flujo
+    ;;"puertoOrigen_0,puertoDestino_1,protocolo_2,TTL_3,TOS_4,IPLen_5,DgmLen_6,RB_7,MF_8,DF_9,opcionesIP_10,F1_11,F2_12,U_13,A_14,P_15,R_16,S_17,F_18,Win_19,
+    ;;TcpLen_20,opcionesTCP_21,UDPLen_22,Type_23,Code_24,telnet_25,ssh_26,ftp_27,netbios_28,rlogin_29,rpc_30,nfs_31,lockd_32,netbiosWinNT_33,Xwin_34,dns_35,
+    ;;ldap_36,smtp_37,pop_38,imap_39,http_40,ssl_41,px_42,serv_43,time_44,tftp_45,finger_46,nntp_47,ntp_48,lpd_49,syslog_50,snmp_51,bgp_52,socks_53\n"
+
+    ;; configuraci�n binaria
+    set indice-caracteristicas-utilizadas [7 8 9 11 12 13 14 15 16 17 18 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53]
+
+
+    ;; determinando el número de características presentes (binario)
+
+    let contador-caracteristicas-activas 0
+    set particulas[]
+    foreach indice-caracteristicas-utilizadas [ ?1 ->
+
+      if ((item ?1 caracteristicas-archivo) > 0)
+      [
+        set contador-caracteristicas-activas (contador-caracteristicas-activas + 1)
+        set particulas lput ?1 particulas
+
+
+
+      ]
+
+    ]
+
+    ;;Alimentar celdas (agentes)
+
+    ask patches with [ pxcor = 0 and pcolor != white][
+      foreach particulas [ i ->
+        set energia (energia + 80 - ((position i genes) ^ 2) * 0.092 )
+        ; 0.087
+      ]
+
+    ]
+
+
+      ifelse (ticks > normality_umbral ) [
+        set energy_prom fput energia-promedio-algas energy_prom
+        set energy_prom but-last energy_prom
+
+      ]
+      [
+        set energy_prom fput energia-promedio-algas energy_prom
+      ]
+
+
+    ;; el orden de los datos importa mucho
+
+    ;;Aplicación del metabolismo
+
+  ] ;;cierre de if de verificación de archivo
+
+
+  if((flag-par = 1) and ( ticks > (  item index_attack List_vl + (item index_normality List_normality))  ))[
+    show "Back to normal!"
+    set index_attack index_attack + 1
+    set index_normality index_normality + 1
+    set fuente-datos-bin 0
+  ]
+  if((flag-par = 1) and ( ticks =  (  item index_attack List_vl )))[
+  show "Under Attack!"
+  set fuente-datos-bin 1
   ]
 
+  if((flag-par = 1) and ticks = 1000)[
+    show "End of Training"
+  ]
+
+    ;;Primera tanda de ataques de Denegacion de Servicio
+    if ( flag-par = 0 )
+    [
+      set nombre-archivo archivoAtaque
+
+      file-open nombre-archivo
+      set fuente-datos nombre-archivo
+      set fuente-datos-bin 0
+      set archivos-procesados (archivos-procesados + 1)
+      set lineas-leidas 0
+      set flag-par 1
+
+    ]
 
 
 
 end
 
+to modified_variedLength
+
+if ( (flag-par = 1) and (not (file-at-end?))  ) [ ;; hay lineas en el archivo que leer
+
+
+    set lineas-leidas lineas-leidas + 1
+
+    ;; se trabaja como string se deben individualizar los datos y usar reglas para generar breeds sedimientos (en las reglas se puede manejar estados multiples y otras discretizaciones
+    ;; luego de generar los sedimentos "nuevos" se procede con las herramientas de an�lisis
+    ;; eventualmente cambiar preNN.pl para facilitar la lectura de datos
+
+
+
+    set caracteristicas-archivo  (sentence    list file-read file-read  file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read
+      file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read
+      file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read)
+
+    ifelse ((item 54 caracteristicas-archivo) > 0) [set ataque 400 ] [set ataque 0]
+
+    ;; Esta versión carga las características que son binarias al flujo
+    ;;"puertoOrigen_0,puertoDestino_1,protocolo_2,TTL_3,TOS_4,IPLen_5,DgmLen_6,RB_7,MF_8,DF_9,opcionesIP_10,F1_11,F2_12,U_13,A_14,P_15,R_16,S_17,F_18,Win_19,
+    ;;TcpLen_20,opcionesTCP_21,UDPLen_22,Type_23,Code_24,telnet_25,ssh_26,ftp_27,netbios_28,rlogin_29,rpc_30,nfs_31,lockd_32,netbiosWinNT_33,Xwin_34,dns_35,
+    ;;ldap_36,smtp_37,pop_38,imap_39,http_40,ssl_41,px_42,serv_43,time_44,tftp_45,finger_46,nntp_47,ntp_48,lpd_49,syslog_50,snmp_51,bgp_52,socks_53\n"
+
+    ;; configuraci�n binaria
+    set indice-caracteristicas-utilizadas [7 8 9 11 12 13 14 15 16 17 18 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53]
+
+
+    ;; determinando el número de características presentes (binario)
+
+    let contador-caracteristicas-activas 0
+    set particulas[]
+    foreach indice-caracteristicas-utilizadas [ ?1 ->
+
+      if ((item ?1 caracteristicas-archivo) > 0)
+      [
+        set contador-caracteristicas-activas (contador-caracteristicas-activas + 1)
+        set particulas lput ?1 particulas
+
+
+
+      ]
+
+    ]
+
+    ;;Alimentar celdas (agentes)
+
+    ask patches with [ pxcor = 0 and pcolor != white][
+      foreach particulas [ i ->
+        set energia (energia + 80 - ((position i genes) ^ 2) * 0.092 )
+        ; 0.087
+      ]
+
+    ]
+
+
+      ifelse (ticks > normality_umbral ) [
+        set energy_prom fput energia-promedio-algas energy_prom
+        set energy_prom but-last energy_prom
+
+      ]
+      [
+        set energy_prom fput energia-promedio-algas energy_prom
+      ]
+
+
+    ;; el orden de los datos importa mucho
+
+    ;;Aplicación del metabolismo
+
+  ] ;;cierre de if de verificación de archivo
+
+  if ((flag-par = 1) and index_attack > 9)
+  [
+      set fin-simulacion true
+      stop
+  ]
+
+  if((flag-par = 1) and ( ticks > (  item index_attack List_vl + (item index_normality List_normality) + 1000)  ))[
+    show "Back to normal!"
+    if (index_attack < 10) [set index_attack index_attack + 1]
+    set index_normality index_normality + 1
+    set fuente-datos-bin 0
+  ]
+  if((flag-par = 1) and ( ticks =  ((  item index_attack List_vl ) + 1000 )))[
+  show "Under Attack!"
+  set fuente-datos-bin 1
+  ]
+
+  if((flag-par = 1) and ticks = 2000)[
+    show "End of Training"
+  ]
+
+    ;;Primera tanda de ataques de Denegacion de Servicio
+    if ( flag-par = 0 )
+    [
+      set nombre-archivo archivoAtaque
+
+      file-open nombre-archivo
+      set fuente-datos nombre-archivo
+      set fuente-datos-bin 0
+      set archivos-procesados (archivos-procesados + 1)
+      set lineas-leidas 0
+      set flag-par 1
+
+    ]
+
+
+
+end
+
+
+to superSet
+
+  if ( (flag-par = 1) and (not (file-at-end?))  ) [ ;; hay lineas en el archivo que leer
+
+
+    set lineas-leidas lineas-leidas + 1
+
+    ;; se trabaja como string se deben individualizar los datos y usar reglas para generar breeds sedimientos (en las reglas se puede manejar estados multiples y otras discretizaciones
+    ;; luego de generar los sedimentos "nuevos" se procede con las herramientas de an�lisis
+    ;; eventualmente cambiar preNN.pl para facilitar la lectura de datos
+
+
+
+    set caracteristicas-archivo  (sentence    list file-read file-read  file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read
+      file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read
+      file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read)
+
+    ifelse ((item 54 caracteristicas-archivo) > 0) [set ataque 400 ] [set ataque 0]
+
+    ;; Esta versión carga las características que son binarias al flujo
+    ;;"puertoOrigen_0,puertoDestino_1,protocolo_2,TTL_3,TOS_4,IPLen_5,DgmLen_6,RB_7,MF_8,DF_9,opcionesIP_10,F1_11,F2_12,U_13,A_14,P_15,R_16,S_17,F_18,Win_19,
+    ;;TcpLen_20,opcionesTCP_21,UDPLen_22,Type_23,Code_24,telnet_25,ssh_26,ftp_27,netbios_28,rlogin_29,rpc_30,nfs_31,lockd_32,netbiosWinNT_33,Xwin_34,dns_35,
+    ;;ldap_36,smtp_37,pop_38,imap_39,http_40,ssl_41,px_42,serv_43,time_44,tftp_45,finger_46,nntp_47,ntp_48,lpd_49,syslog_50,snmp_51,bgp_52,socks_53\n"
+
+    ;; configuraci�n binaria
+    set indice-caracteristicas-utilizadas [7 8 9 11 12 13 14 15 16 17 18 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53]
+
+
+    ;; determinando el número de características presentes (binario)
+
+    let contador-caracteristicas-activas 0
+    set particulas[]
+    foreach indice-caracteristicas-utilizadas [ ?1 ->
+
+      if ((item ?1 caracteristicas-archivo) > 0)
+      [
+        set contador-caracteristicas-activas (contador-caracteristicas-activas + 1)
+        set particulas lput ?1 particulas
+
+
+
+      ]
+
+    ]
+
+    ;;Alimentar celdas (agentes)
+
+    ask patches with [ pxcor = 0 and pcolor != white][
+      foreach particulas [ i ->
+        set energia (energia + 80 - ((position i genes) ^ 2) * 0.092 )
+        ; 0.087
+      ]
+
+    ]
+
+
+      ifelse (ticks > normality_umbral ) [
+        set energy_prom fput energia-promedio-algas energy_prom
+        set energy_prom but-last energy_prom
+
+      ]
+      [
+        set energy_prom fput energia-promedio-algas energy_prom
+      ]
+
+
+    ;; el orden de los datos importa mucho
+
+    ;;Aplicación del metabolismo
+
+  ] ;;cierre de if de verificación de archivo
+
+  if ((flag-par = 1) and index_attack > 19)
+  [
+      set fin-simulacion true
+      stop
+  ]
+
+  if((flag-par = 1) and ( ticks > (  item index_attack List_ss + 2000)  ))[
+    show "Back to normal!"
+    set index_attack index_attack + 1
+    set fuente-datos-bin 0
+  ]
+  if((flag-par = 1) and ( ticks =  (  item index_attack List_ss )))[
+  show "Under Attack!"
+  set fuente-datos-bin 1
+  ]
+
+  if((flag-par = 1) and ticks = 3905)[
+    show "End of Training"
+  ]
+
+    ;;Primera tanda de ataques de Denegacion de Servicio
+    if ( flag-par = 0 )
+    [
+      set nombre-archivo archivoAtaque
+
+      file-open nombre-archivo
+      set fuente-datos nombre-archivo
+      set fuente-datos-bin 0
+      set archivos-procesados (archivos-procesados + 1)
+      set lineas-leidas 0
+      set flag-par 1
+
+    ]
+
+
+
+end
+
+
 to cargar-datos2  ;;version con carga de datos desde archivo
-  ifelse ( (lineas-leidas < 950) and (not (file-at-end?))  ) [ ;; hay lineas en el archivo que leer
+  ifelse ( (lineas-leidas < 1000) and (not (file-at-end?))  ) [ ;; hay lineas en el archivo que leer
 
 
     set lineas-leidas lineas-leidas + 1
@@ -688,9 +1086,16 @@ to cargar-datos2  ;;version con carga de datos desde archivo
       foreach particulas [ i ->
         set energia (energia + 83 - position i genes * 2.9)
       ]
-
-
     ]
+
+    ifelse (ticks > normality_umbral ) [
+        set energy_prom fput energia-promedio-algas energy_prom
+        set energy_prom but-last energy_prom
+
+      ]
+      [
+        set energy_prom fput energia-promedio-algas energy_prom
+      ]
     ;; el orden de los datos importa mucho
 
     ;;Aplicación del metabolismo
@@ -701,7 +1106,7 @@ to cargar-datos2  ;;version con carga de datos desde archivo
     if (flag-par = 1)
     [
       set rounds (rounds + 1)
-      ifelse rounds >= 2 [
+      ifelse rounds >= 4 [
         set fin-simulacion true
         stop
       ]
@@ -710,6 +1115,7 @@ to cargar-datos2  ;;version con carga de datos desde archivo
         set fuente-datos "datosNormalesEIA3000.dat"
         set nombre-archivo "datosNormalesEIA3000.dat"
         set lineas-leidas 0
+        set fuente-datos-bin 0
         ifelse(Tipo_ataque_value = 0)
       [
         set Tipo_ataque_value 1
@@ -732,101 +1138,6 @@ to cargar-datos2  ;;version con carga de datos desde archivo
         set nombre-archivo archivoAtaque2
       ]
       show nombre-archivo
-
-      file-open nombre-archivo
-      set fuente-datos nombre-archivo
-      set fuente-datos-bin 1
-      set archivos-procesados (archivos-procesados + 1)
-      set lineas-leidas 0
-
-    ]
-
-    ifelse (flag-par = 0 )
-    [set flag-par 1]
-    [set flag-par 0]
-  ]
-end
-
-to cargar-datos3  ;;version con carga de datos desde archivo -- Ataques Esporadicos
-  ifelse ( (lineas-leidas < 300) and (not (file-at-end?))  ) [ ;; hay lineas en el archivo que leer
-
-
-    set lineas-leidas lineas-leidas + 1
-
-    ;; se trabaja como string se deben individualizar los datos y usar reglas para generar breeds sedimientos (en las reglas se puede manejar estados multiples y otras discretizaciones
-    ;; luego de generar los sedimentos "nuevos" se procede con las herramientas de an�lisis
-    ;; eventualmente cambiar preNN.pl para facilitar la lectura de datos
-
-
-
-    set caracteristicas-archivo  (sentence    list file-read file-read  file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read
-      file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read
-      file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read)
-
-    ifelse ((item 54 caracteristicas-archivo) > 0) [set ataque 400 ] [set ataque 0]
-
-    ;; Esta versión carga las características que son binarias al flujo
-    ;;"puertoOrigen_0,puertoDestino_1,protocolo_2,TTL_3,TOS_4,IPLen_5,DgmLen_6,RB_7,MF_8,DF_9,opcionesIP_10,F1_11,F2_12,U_13,A_14,P_15,R_16,S_17,F_18,Win_19,
-    ;;TcpLen_20,opcionesTCP_21,UDPLen_22,Type_23,Code_24,telnet_25,ssh_26,ftp_27,netbios_28,rlogin_29,rpc_30,nfs_31,lockd_32,netbiosWinNT_33,Xwin_34,dns_35,
-    ;;ldap_36,smtp_37,pop_38,imap_39,http_40,ssl_41,px_42,serv_43,time_44,tftp_45,finger_46,nntp_47,ntp_48,lpd_49,syslog_50,snmp_51,bgp_52,socks_53\n"
-
-    ;; configuraci�n binaria
-    set indice-caracteristicas-utilizadas [7 8 9 11 12 13 14 15 16 17 18 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53]
-
-
-    ;; determinando el número de características presentes (binario)
-
-    let contador-caracteristicas-activas 0
-    set particulas[]
-    foreach indice-caracteristicas-utilizadas [ ?1 ->
-
-      if ((item ?1 caracteristicas-archivo) > 0)
-      [
-        set contador-caracteristicas-activas (contador-caracteristicas-activas + 1)
-        set particulas lput ?1 particulas
-
-
-
-      ]
-
-    ]
-
-    ;;Alimentar celdas (agentes)
-
-    ask patches with [ pxcor = 0 and pcolor != white][
-      foreach particulas [ i ->
-        set energia (energia + 83 - position i genes * 2.9)
-      ]
-
-
-    ]
-    ;; el orden de los datos importa mucho
-
-    ;;Aplicación del metabolismo
-
-  ] ;;cierre de if de verificación de archivo
-
-  [
-    if (flag-par = 1)
-    [
-      set rounds (rounds + 1)
-      ifelse rounds >= 6 [
-        set fin-simulacion true
-        stop
-      ]
-      [
-        file-open "datosNormalesEIA3000.dat"
-        set fuente-datos "datosNormalesEIA3000.dat"
-        set nombre-archivo "datosNormalesEIA3000.dat"
-        set lineas-leidas 0
-        show "Back to normal!"
-      ]
-    ]
-
-    ;;Primera tanda de ataques de Denegacion de Servicio
-    if ( flag-par = 0 )
-    [
-      set nombre-archivo archivoAtaque
 
       file-open nombre-archivo
       set fuente-datos nombre-archivo
@@ -902,20 +1213,56 @@ to verificar-ataque
 
 end
 
-
-
 to tabla-contingencia
   if ( ticks > ventana-entrenamiento)
   [
     ;;if (ataque-detectado) [set contador-alertas (contador-alertas+1)]
     set entrenamiento "clasificando"
     ;;Momento para intervenir si se considera congelar la evolución
+    let onAttackInterval False
+
+    if (tipo_ataque = "superSet")[
+      ifelse (ticks > (item index_attack List_ss) and ticks <= (item index_attack List_ss + 2000) )[
+        set onAttackInterval True
+      ]
+      [
+        set onAttackInterval False
+      ]
+    ]
+
+    if (tipo_ataque = "variedLength")[
+      ifelse (ticks > (item index_attack List_vl) and ticks <= (item index_attack List_vl + (item index_normality List_normality)) )[
+        set onAttackInterval True
+      ]
+      [
+        set onAttackInterval False
+      ]
+    ]
+
+    if (tipo_ataque = "modified_variedLength")[
+      ifelse (ticks > (item index_attack List_vl + 1000) and ticks <= (item index_attack List_vl + (item index_normality List_normality) + 1000) )[
+        set onAttackInterval True
+      ]
+      [
+        set onAttackInterval False
+      ]
+    ]
+    if (tipo_ataque = "Distintos Ataques")[
+      ifelse (fuente-datos-bin = 1)[
+        set onAttackInterval True
+      ]
+      [
+        set onAttackInterval False
+      ]
+    ]
+
+
 
     ;;Muestreo Unitario, válido para calibración de parámetros basado en paquete a paquete
-    if (( fuente-datos-bin = 1 ) and (ataque-detectado)) [set VP (VP + 1)]
-    if (( fuente-datos-bin = 1 ) and (not ataque-detectado)) [set FN (FN + 1)]
-    if (( fuente-datos-bin = 0 ) and (not ataque-detectado)) [set VN (VN + 1)]
-    if (( fuente-datos-bin = 0 ) and (ataque-detectado)) [set FP (FP + 1)]
+    if (( onAttackInterval ) and (under_attack)) [set VP (VP + 1)]
+    if (( onAttackInterval ) and (not under_attack)) [set FN (FN + 1)]
+    if (( not onAttackInterval ) and (not under_attack)) [set VN (VN + 1)]
+    if (( not onAttackInterval ) and (under_attack)) [set FP (FP + 1)]
 
 
     ;; Calculando Sensibilidad y Especificidad
@@ -985,10 +1332,10 @@ AC
 1
 
 BUTTON
-696
-12
-778
-45
+513
+35
+595
+68
 Inicializar
 setup
 NIL
@@ -1002,10 +1349,10 @@ NIL
 1
 
 BUTTON
-696
-52
-774
-85
+515
+71
+593
+104
 Ejecutar
 go
 T
@@ -1019,8 +1366,8 @@ NIL
 1
 
 PLOT
-756
-219
+646
+181
 1320
 435
 Celdas-Tiempo
@@ -1040,12 +1387,14 @@ PENS
 "banda-inferior-celdas" 1.0 0 -13791810 true "" ""
 "banda-superior-energia" 1.0 0 -1264960 true "" ""
 "banda-inferior-energia" 1.0 0 -3508570 true "" ""
+"umbral energia" 1.0 0 -1184463 true "" "plot energy_umbral"
+"prom-energia-actual" 1.0 0 -16777216 true "" "plot mean energy_prom"
 
 PLOT
-3
-12
-589
-331
+45
+51
+274
+292
 Variabilidad-Genetica
 Especímenes
 Cantidad
@@ -1078,21 +1427,21 @@ PENS
 "diversidad" 1.0 0 -817084 true "" ""
 
 SWITCH
-571
-384
-736
-417
+53
+580
+218
+613
 activar-penalizacion
 activar-penalizacion
-0
+1
 1
 -1000
 
 MONITOR
-601
-231
-725
-276
+499
+570
+623
+615
 Muestras Revisadas
 muestras-revisadas
 17
@@ -1100,10 +1449,10 @@ muestras-revisadas
 11
 
 MONITOR
-579
-336
-724
-381
+500
+464
+645
+509
 Situación
 fuente-datos
 17
@@ -1111,10 +1460,10 @@ fuente-datos
 11
 
 MONITOR
-601
-281
-701
-326
+499
+625
+599
+670
 Entrenamiento?
 Entrenamiento
 17
@@ -1122,20 +1471,20 @@ Entrenamiento
 11
 
 TEXTBOX
-616
-92
-766
-110
+511
+115
+661
+133
 Tabla de Contingencia
 11
 0.0
 1
 
 MONITOR
-605
-133
-662
-178
+506
+132
+563
+177
 NIL
 VP
 17
@@ -1143,10 +1492,10 @@ VP
 11
 
 MONITOR
-665
-133
-722
-178
+566
+132
+623
+177
 NIL
 FP
 17
@@ -1154,10 +1503,10 @@ FP
 11
 
 MONITOR
-605
-180
-662
-225
+506
+179
+563
+224
 NIL
 FN
 17
@@ -1165,10 +1514,10 @@ FN
 11
 
 MONITOR
-666
-180
-723
-225
+567
+179
+624
+224
 NIL
 VN
 17
@@ -1195,10 +1544,10 @@ PENS
 "umbral" 1.0 0 -16448764 true "" ""
 
 MONITOR
-535
-422
-610
-467
+497
+234
+564
+279
 NIL
 sensibilidad
 17
@@ -1206,10 +1555,10 @@ sensibilidad
 11
 
 MONITOR
-620
-423
-703
-468
+567
+234
+640
+279
 NIL
 especificidad
 17
@@ -1217,10 +1566,10 @@ especificidad
 11
 
 MONITOR
-592
-474
-704
-519
+241
+654
+353
+699
 NIL
 fuente-datos-bin
 17
@@ -1228,10 +1577,10 @@ fuente-datos-bin
 11
 
 MONITOR
-590
-524
-677
-569
+241
+707
+328
+752
 NIL
 limite-energia
 17
@@ -1239,10 +1588,10 @@ limite-energia
 11
 
 MONITOR
-488
-525
-585
-570
+499
+511
+596
+556
 NIL
 limite-poblacion
 17
@@ -1250,10 +1599,10 @@ limite-poblacion
 11
 
 BUTTON
-627
-52
-691
-85
+445
+35
+509
+68
 step
 go
 NIL
@@ -1278,10 +1627,10 @@ Switch-00
 String
 
 PLOT
-788
+838
 10
-1320
-214
+1284
+177
 Pheromones
 NIL
 NIL
@@ -1309,12 +1658,74 @@ String
 CHOOSER
 60
 517
-233
+234
 562
 Tipo_ataque
 Tipo_ataque
-"Ataques Esporadicos" "Distintos Ataques"
+"variedLength" "superSet" "modified_variedLength" "Distintos Ataques"
+3
+
+PLOT
+294
+84
+494
+234
+Variedad energia
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot count turtles"
+
+INPUTBOX
+521
+280
+606
+340
+energy_epsylon
+19.0
+1
 0
+Number
+
+INPUTBOX
+510
+341
+618
+401
+timer_umbral
+100.0
+1
+0
+Number
+
+MONITOR
+407
+254
+464
+299
+attack
+under_attack
+17
+1
+11
+
+INPUTBOX
+511
+400
+618
+460
+normality_umbral
+50.0
+1
+0
+Number
 
 @#$#@#$#@
 #EL MODELO
@@ -1811,7 +2222,7 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 6.0.4
+NetLogo 6.1.0
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
@@ -1935,6 +2346,123 @@ NetLogo 6.0.4
     </enumeratedValueSet>
     <enumeratedValueSet variable="activar-penalizacion">
       <value value="true"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="experiment" repetitions="1" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <metric>count turtles</metric>
+    <enumeratedValueSet variable="energy_epsylon">
+      <value value="18"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="timer_umbral">
+      <value value="100"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="normality_umbral">
+      <value value="25"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="archivoAtaque">
+      <value value="&quot;superSet01&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="activar-penalizacion">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Tipo_ataque">
+      <value value="&quot;superSet&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="ArchivoAtaque2">
+      <value value="&quot;Tor-00&quot;"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="Superset" repetitions="1" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="26052"/>
+    <metric>sensibilidad + especificidad</metric>
+    <steppedValueSet variable="energy_epsylon" first="17" step="1" last="22"/>
+    <steppedValueSet variable="timer_umbral" first="50" step="25" last="100"/>
+    <enumeratedValueSet variable="normality_umbral">
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="archivoAtaque">
+      <value value="&quot;superSet01&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="activar-penalizacion">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Tipo_ataque">
+      <value value="&quot;superSet&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="ArchivoAtaque2">
+      <value value="&quot;Tor-00&quot;"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="variedLength" repetitions="1" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="16184"/>
+    <metric>sensibilidad + especificidad</metric>
+    <steppedValueSet variable="energy_epsylon" first="17" step="1" last="22"/>
+    <steppedValueSet variable="timer_umbral" first="50" step="25" last="100"/>
+    <enumeratedValueSet variable="normality_umbral">
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="archivoAtaque">
+      <value value="&quot;variedLength01&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="activar-penalizacion">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Tipo_ataque">
+      <value value="&quot;variedLength&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="ArchivoAtaque2">
+      <value value="&quot;Tor-00&quot;"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="variedLength02" repetitions="1" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <timeLimit steps="16873"/>
+    <metric>sensibilidad + especificidad</metric>
+    <steppedValueSet variable="energy_epsylon" first="17" step="1" last="22"/>
+    <steppedValueSet variable="timer_umbral" first="50" step="25" last="100"/>
+    <enumeratedValueSet variable="normality_umbral">
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="archivoAtaque">
+      <value value="&quot;modified_variedLength01&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="activar-penalizacion">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Tipo_ataque">
+      <value value="&quot;modified_variedLength&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="ArchivoAtaque2">
+      <value value="&quot;Tor-00&quot;"/>
+    </enumeratedValueSet>
+  </experiment>
+  <experiment name="variedAttack" repetitions="2" runMetricsEveryStep="true">
+    <setup>setup</setup>
+    <go>go</go>
+    <metric>sensibilidad + especificidad</metric>
+    <steppedValueSet variable="energy_epsylon" first="17" step="1" last="22"/>
+    <steppedValueSet variable="timer_umbral" first="50" step="25" last="100"/>
+    <enumeratedValueSet variable="normality_umbral">
+      <value value="50"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="archivoAtaque">
+      <value value="&quot;Switch-00&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="activar-penalizacion">
+      <value value="false"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="Tipo_ataque">
+      <value value="&quot;Distintos Ataques&quot;"/>
+    </enumeratedValueSet>
+    <enumeratedValueSet variable="ArchivoAtaque2">
+      <value value="&quot;Tor-00&quot;"/>
     </enumeratedValueSet>
   </experiment>
 </experiments>
