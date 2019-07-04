@@ -943,7 +943,7 @@ to superSet
       file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read )
 
     ;ifelse ((item 53 caracteristicas-archivo) > 0) [set ataque 400 ] [set ataque 0]
-
+    ;show caracteristicas-archivo
     ;; Esta versión carga las características que son binarias al flujo
     ;;"puertoOrigen_0,puertoDestino_1,protocolo_2,TTL_3,TOS_4,IPLen_5,DgmLen_6,RB_7,MF_8,DF_9,opcionesIP_10,F1_11,F2_12,U_13,A_14,P_15,R_16,S_17,F_18,Win_19,
     ;;TcpLen_20,opcionesTCP_21,UDPLen_22,Type_23,Code_24,telnet_25,ssh_26,ftp_27,netbios_28,rlogin_29,rpc_30,nfs_31,lockd_32,netbiosWinNT_33,Xwin_34,dns_35,
@@ -1295,10 +1295,10 @@ to establecer-limites-bandas
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-711
-442
-1321
-653
+533
+438
+1143
+649
 -1
 -1
 2.0
@@ -1332,10 +1332,10 @@ AC
 1
 
 BUTTON
-513
-35
-595
-68
+443
+26
+525
+59
 Inicializar
 setup
 NIL
@@ -1349,10 +1349,10 @@ NIL
 1
 
 BUTTON
-515
-71
-593
-104
+444
+65
+522
+98
 Ejecutar
 go
 T
@@ -1366,10 +1366,10 @@ NIL
 1
 
 PLOT
-646
-181
-1320
-435
+532
+180
+1206
+434
 Celdas-Tiempo
 Tiempo
 #
@@ -1391,10 +1391,10 @@ PENS
 "prom-energia-actual" 1.0 0 -16777216 true "" "plot mean energy_prom"
 
 PLOT
-45
-51
-274
-292
+0
+10
+229
+251
 Variabilidad-Genetica
 Especímenes
 Cantidad
@@ -1409,10 +1409,10 @@ PENS
 "default" 1.0 1 -5825686 true "" ""
 
 PLOT
-3
-336
-494
-486
+4
+368
+439
+513
 Variabilidad Genética
 Tiempo
 Indicador de Variabilidad
@@ -1427,10 +1427,10 @@ PENS
 "diversidad" 1.0 0 -817084 true "" ""
 
 SWITCH
-53
-580
-218
-613
+0
+311
+145
+344
 activar-penalizacion
 activar-penalizacion
 1
@@ -1438,10 +1438,10 @@ activar-penalizacion
 -1000
 
 MONITOR
-499
-570
-623
-615
+21
+642
+145
+687
 Muestras Revisadas
 muestras-revisadas
 17
@@ -1449,10 +1449,10 @@ muestras-revisadas
 11
 
 MONITOR
-500
-464
-645
-509
+4
+256
+149
+301
 Situación
 fuente-datos
 17
@@ -1460,10 +1460,10 @@ fuente-datos
 11
 
 MONITOR
-499
-625
-599
-670
+439
+366
+531
+411
 Entrenamiento?
 Entrenamiento
 17
@@ -1471,20 +1471,20 @@ Entrenamiento
 11
 
 TEXTBOX
-511
-115
-661
-133
+254
+184
+404
+202
 Tabla de Contingencia
 11
 0.0
 1
 
 MONITOR
-506
-132
-563
-177
+249
+201
+306
+246
 NIL
 VP
 17
@@ -1492,10 +1492,10 @@ VP
 11
 
 MONITOR
-566
-132
-623
-177
+309
+201
+366
+246
 NIL
 FP
 17
@@ -1503,10 +1503,10 @@ FP
 11
 
 MONITOR
-506
-179
-563
-224
+249
+248
+306
+293
 NIL
 FN
 17
@@ -1514,10 +1514,10 @@ FN
 11
 
 MONITOR
-567
-179
-624
-224
+310
+248
+367
+293
 NIL
 VN
 17
@@ -1525,10 +1525,10 @@ VN
 11
 
 PLOT
-711
-682
-1322
-832
+531
+655
+1142
+805
 Alertas-Tiempo
 NIL
 NIL
@@ -1544,10 +1544,10 @@ PENS
 "umbral" 1.0 0 -16448764 true "" ""
 
 MONITOR
-497
-234
-564
-279
+240
+303
+307
+348
 NIL
 sensibilidad
 17
@@ -1555,10 +1555,10 @@ sensibilidad
 11
 
 MONITOR
-567
-234
-640
-279
+310
+303
+383
+348
 NIL
 especificidad
 17
@@ -1566,10 +1566,10 @@ especificidad
 11
 
 MONITOR
-241
-654
-353
-699
+188
+658
+300
+703
 NIL
 fuente-datos-bin
 17
@@ -1577,10 +1577,10 @@ fuente-datos-bin
 11
 
 MONITOR
-241
-707
-328
-752
+307
+659
+394
+704
 NIL
 limite-energia
 17
@@ -1588,10 +1588,10 @@ limite-energia
 11
 
 MONITOR
-499
-511
-596
-556
+21
+583
+118
+628
 NIL
 limite-poblacion
 17
@@ -1599,10 +1599,10 @@ limite-poblacion
 11
 
 BUTTON
-445
-35
-509
-68
+453
+107
+517
+140
 step
 go
 NIL
@@ -1616,10 +1616,10 @@ NIL
 1
 
 INPUTBOX
-241
-512
-484
-572
+188
+516
+431
+576
 archivoAtaque
 superSet01
 1
@@ -1627,9 +1627,9 @@ superSet01
 String
 
 PLOT
-838
+536
 10
-1284
+982
 177
 Pheromones
 NIL
@@ -1645,10 +1645,10 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot pheromones"
 
 INPUTBOX
-241
-585
-484
-645
+188
+589
+431
+649
 ArchivoAtaque2
 Tor-00
 1
@@ -1656,20 +1656,20 @@ Tor-00
 String
 
 CHOOSER
-60
-517
-234
-562
+7
+521
+181
+566
 Tipo_ataque
 Tipo_ataque
 "variedLength" "superSet" "modified_variedLength" "Distintos Ataques"
 1
 
 PLOT
-294
-84
-494
 234
+10
+434
+160
 Variedad energia
 NIL
 NIL
@@ -1684,10 +1684,10 @@ PENS
 "default" 1.0 0 -16777216 true "" "plot count turtles"
 
 INPUTBOX
-521
-280
-606
-340
+404
+172
+489
+232
 energy_epsylon
 19.0
 1
@@ -1695,10 +1695,10 @@ energy_epsylon
 Number
 
 INPUTBOX
-510
-341
-618
-401
+393
+233
+501
+293
 timer_umbral
 100.0
 1
@@ -1706,10 +1706,10 @@ timer_umbral
 Number
 
 MONITOR
-407
-254
-464
-299
+165
+258
+222
+303
 attack
 under_attack
 17
@@ -1717,10 +1717,10 @@ under_attack
 11
 
 INPUTBOX
-511
-400
-618
-460
+394
+292
+501
+352
 normality_umbral
 50.0
 1

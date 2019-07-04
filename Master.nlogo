@@ -3,16 +3,28 @@ extensions [ ls ]
 globals [
   self_model
   nonself_model
+  buffer_list
+  nonself_list
 ]
+
+to buffer
+  let aux [caracteristicas-archivo] ls:of self_model
+  set buffer_list sentence buffer_list aux
+  set nonself_list sublist buffer_list 0 54
+  let aux_left sublist buffer_list 54 (length buffer_list)
+  set buffer_list aux_left
+end
 
 to setup
   ls:reset
   ca
   ls:create-interactive-models 1  "eia2DMidgardBase.nlogo"
   set self_model last ls:models
-
   ls:create-interactive-models  1 "firstLayerPrototype.nlogo"
   set nonself_model last ls:models
+
+  set buffer_list []
+  set nonself_list []
 
   ls:ask self_model[
     setup
@@ -40,21 +52,15 @@ to go
   ls:assign nonself_model pheromones [ pheromones ] ls:of self_model
   ;ls:assign nonself_model importantFeatureIndex [ particulas ] ls:of self_model
   ls:assign nonself_model isUnderAttack [ under_attack ] ls:of self_model
-  ls:assign nonself_model actualLine [ caracteristicas-archivo ] ls:of self_model
+  if( ticks > 0) [buffer]
+  ls:assign nonself_model actualLine nonself_list
   ;show [ caracteristicas-archivo ] ls:of self_model
-  ;show "parsed"
-  if( ticks > 1) [
+  if( ticks > 0) [
     ls:ask nonself_model [parse-input]
-    ;show [ actualLine ] ls:of nonself_model
   ]
   ls:ask nonself_model [go]
 
   ;show [ particulas ] ls:of self_model
-
-
-  ;ls:ask self_model [
-   ; set aux Test1
-  ;]
 
   tick
 
@@ -81,17 +87,17 @@ GRAPHICS-WINDOW
 16
 -16
 16
-0
-0
+1
+1
 1
 ticks
 30.0
 
 BUTTON
-58
-28
-123
-61
+78
+79
+143
+112
 NIL
 setup
 NIL

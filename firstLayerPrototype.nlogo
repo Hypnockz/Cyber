@@ -187,9 +187,9 @@ to ascend
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-233
+85
 10
-774
+626
 448
 -1
 -1
@@ -214,10 +214,10 @@ ticks
 30.0
 
 BUTTON
-14
-87
-80
-120
+12
+20
+78
+53
 NIL
 setup
 NIL
@@ -231,10 +231,10 @@ NIL
 1
 
 BUTTON
-125
-88
-188
-121
+12
+73
+75
+106
 NIL
 go
 T
@@ -248,10 +248,10 @@ NIL
 1
 
 PLOT
-787
-15
-1268
-221
+118
+448
+599
+654
 Global energy
 tick
 energy
@@ -266,10 +266,10 @@ PENS
 "pen-1" 1.0 0 -1604481 true "" "plot mean [energy] of turtles"
 
 BUTTON
-126
-133
-189
-166
+13
+118
+76
+151
 step
 go
 NIL
@@ -283,10 +283,10 @@ NIL
 1
 
 PLOT
-785
-236
-1263
-432
+116
+669
+594
+865
 Best inidvidual energy
 NIL
 NIL
@@ -647,7 +647,7 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 6.0.4
+NetLogo 6.1.0
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
