@@ -69,7 +69,6 @@ to setup-global-vars
   set reproductionThreshold 600
   set championshipThreshold 800
   set isUnderAttack False
-  set lostElement -1
 end
 
 to load-data
@@ -84,15 +83,6 @@ to load-data
 end
 
 to parse-input
-  ;;eliminar ultimo caracter feo
-  ifelse (lostElement = -1)[
-    set lostElement last actualLine
-    set actualLine but-last actualLine
-  ][
-    set actualLine fput lostElement actualLine
-    set lostElement last actualLine
-    set actualLine but-last actualLine
-  ]
   set networkBehavior []
 
   foreach importantFeatureIndex[ i ->
