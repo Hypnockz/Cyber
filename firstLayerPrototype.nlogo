@@ -14,7 +14,7 @@ globals [
   ;;other parameters
   moveThreshold championshipThreshold reproductionThreshold
 
-  isInLevelSpace isUnderAttack
+  isInLevelSpace isUnderAttack actualLine
 ]
 
 breed [gladiators gladiator]
@@ -65,28 +65,35 @@ to setup-global-vars
   set moveThreshold 400
   set reproductionThreshold 600
   set championshipThreshold 800
+  set isUnderAttack False
 end
 
 to load-data
   if (not file-at-end?)[
-    let actualLine []
     set actualLine file-read-line
 
     set actualLine read-from-string (word "[" actualLine "]")
-    set networkBehavior []
+    parse-input
 
-    foreach importantFeatureIndex[ i ->
-      if ((item i actualLine) > 0)[ set networkBehavior lput i networkBehavior ]
-    ]
   ]
   show networkBehavior
+end
+
+to parse-input
+  ;;eliminar ultimo caracter feo
+  set actualLine but-last actualLine
+  set networkBehavior []
+
+  foreach importantFeatureIndex[ i ->
+    if ((item i actualLine) > 0)[ set networkBehavior lput i networkBehavior ]
+  ]
 end
 
 to go
   ;;only load data if not on LevelSpace
   if (not isInLevelSpace)[ load-data ]
   ;;force evolution only in case of attack
-  if (isUnderAtack)[
+  if (isUnderAttack)[
     feed
     move
     reproduce
@@ -221,21 +228,6 @@ NIL
 NIL
 NIL
 1
-
-SLIDER
-15
-10
-195
-43
-pheromoneThreshold
-pheromoneThreshold
-1
-10
-5.0
-1
-1
-NIL
-HORIZONTAL
 
 BUTTON
 125
