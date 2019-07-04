@@ -15,6 +15,9 @@ globals [
   moveThreshold championshipThreshold reproductionThreshold
 
   isInLevelSpace isUnderAttack actualLine
+
+  ;;only for bad weas
+  lostElement
 ]
 
 breed [gladiators gladiator]
@@ -66,6 +69,7 @@ to setup-global-vars
   set reproductionThreshold 600
   set championshipThreshold 800
   set isUnderAttack False
+  set lostElement -1
 end
 
 to load-data
@@ -81,7 +85,14 @@ end
 
 to parse-input
   ;;eliminar ultimo caracter feo
-  set actualLine but-last actualLine
+  ifelse (lostElement = -1)[
+    set lostElement last actualLine
+    set actualLine but-last actualLine
+  ][
+    set actualLine fput lostElement actualLine
+    set lostElement last actualLine
+    set actualLine but-last actualLine
+  ]
   set networkBehavior []
 
   foreach importantFeatureIndex[ i ->
@@ -646,7 +657,7 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 6.1.0
+NetLogo 6.0.4
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
