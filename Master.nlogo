@@ -24,6 +24,7 @@ to setup
   ]
   ls:assign self_model Tipo_ataque Ataque
   ls:assign self_model archivoAtaque Archivo
+  ls:assign self_model energy_epsylon 18.5
   ls:assign nonself_model isInLevelSpace True
   ls:show ls:models
   ls:assign nonself_model isUnderAttack [ under_attack ] ls:of self_model
@@ -39,10 +40,16 @@ to go
   ls:assign nonself_model pheromones [ pheromones ] ls:of self_model
   ;ls:assign nonself_model importantFeatureIndex [ particulas ] ls:of self_model
   ls:assign nonself_model isUnderAttack [ under_attack ] ls:of self_model
-  ls:assign nonself_model networkBehavior [ particulas ] ls:of self_model
+  ls:assign nonself_model actualLine [ caracteristicas-archivo ] ls:of self_model
+  ;show [ caracteristicas-archivo ] ls:of self_model
+  ;show "parsed"
+  if( ticks > 1) [
+    ls:ask nonself_model [parse-input]
+    ;show [ actualLine ] ls:of nonself_model
+  ]
   ls:ask nonself_model [go]
 
-
+  ;show [ particulas ] ls:of self_model
 
 
   ;ls:ask self_model [
@@ -122,7 +129,7 @@ CHOOSER
 Ataque
 Ataque
 "variedLength" "superSet" "modified_variedLength" "Distintos Ataques"
-0
+1
 
 INPUTBOX
 15
@@ -130,7 +137,7 @@ INPUTBOX
 207
 349
 Archivo
-variedLength01
+superSet01
 1
 0
 String
