@@ -724,7 +724,7 @@ if ( (flag-par = 1) and (not (file-at-end?))  ) [ ;; hay lineas en el archivo qu
       file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read
       file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read)
 
-    ifelse ((item 54 caracteristicas-archivo) > 0) [set ataque 400 ] [set ataque 0]
+    ;ifelse ((item 53 caracteristicas-archivo) > 0) [set ataque 400 ] [set ataque 0]
 
     ;; Esta versión carga las características que son binarias al flujo
     ;;"puertoOrigen_0,puertoDestino_1,protocolo_2,TTL_3,TOS_4,IPLen_5,DgmLen_6,RB_7,MF_8,DF_9,opcionesIP_10,F1_11,F2_12,U_13,A_14,P_15,R_16,S_17,F_18,Win_19,
@@ -940,9 +940,9 @@ to superSet
 
     set caracteristicas-archivo  (sentence    list file-read file-read  file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read
       file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read
-      file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read)
+      file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read )
 
-    ifelse ((item 54 caracteristicas-archivo) > 0) [set ataque 400 ] [set ataque 0]
+    ;ifelse ((item 53 caracteristicas-archivo) > 0) [set ataque 400 ] [set ataque 0]
 
     ;; Esta versión carga las características que son binarias al flujo
     ;;"puertoOrigen_0,puertoDestino_1,protocolo_2,TTL_3,TOS_4,IPLen_5,DgmLen_6,RB_7,MF_8,DF_9,opcionesIP_10,F1_11,F2_12,U_13,A_14,P_15,R_16,S_17,F_18,Win_19,
@@ -1621,7 +1621,7 @@ INPUTBOX
 484
 572
 archivoAtaque
-Switch-00
+superSet01
 1
 0
 String
@@ -1663,7 +1663,7 @@ CHOOSER
 Tipo_ataque
 Tipo_ataque
 "variedLength" "superSet" "modified_variedLength" "Distintos Ataques"
-3
+1
 
 PLOT
 294
