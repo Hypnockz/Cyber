@@ -16,14 +16,18 @@ to setup
 
   ls:ask self_model[
     setup
-    set archivoAtaque "Tor-00"
+    ;set Tipo_ataque Ataque
+    ;set archivoAtaque  [ Archivo ] ls:of self
   ]
    ls:ask nonself_model[
     setup
   ]
+  ls:assign self_model Tipo_ataque Ataque
+  ls:assign self_model archivoAtaque Archivo
   ls:assign nonself_model isInLevelSpace True
   ls:show ls:models
-  ls:assign nonself_model pheromones [ pheromones ] ls:of self_model
+  ls:assign nonself_model isUnderAttack [ under_attack ] ls:of self_model
+
   reset-ticks
 end
 
@@ -33,7 +37,9 @@ to go
 
   ls:ask self_model [go]
   ls:assign nonself_model pheromones [ pheromones ] ls:of self_model
-  ls:assign nonself_model importantFeatureIndex [ caracteristicas-archivo ] ls:of self_model
+  ;ls:assign nonself_model importantFeatureIndex [ particulas ] ls:of self_model
+  ls:assign nonself_model isUnderAttack [ under_attack ] ls:of self_model
+  ls:assign nonself_model networkBehavior [ particulas ] ls:of self_model
   ls:ask nonself_model [go]
 
 
@@ -46,7 +52,6 @@ to go
   tick
 
 end
-
 @#$#@#$#@
 GRAPHICS-WINDOW
 210
@@ -108,6 +113,27 @@ NIL
 NIL
 NIL
 1
+
+CHOOSER
+29
+203
+203
+248
+Ataque
+Ataque
+"variedLength" "superSet" "modified_variedLength" "Distintos Ataques"
+0
+
+INPUTBOX
+15
+289
+207
+349
+Archivo
+variedLength01
+1
+0
+String
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -451,7 +477,7 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 6.0.4
+NetLogo 6.1.0
 @#$#@#$#@
 @#$#@#$#@
 @#$#@#$#@
