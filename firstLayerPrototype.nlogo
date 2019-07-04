@@ -13,6 +13,8 @@ globals [
 
   ;;other parameters
   moveThreshold championshipThreshold reproductionThreshold
+
+  isInLevelSpace isUnderAttack
 ]
 
 breed [gladiators gladiator]
@@ -29,7 +31,7 @@ to setup
   clear-all
   reset-ticks
   file-close-all
-
+  set isInLevelSpace False
   set archivoAtaque "Tor-00"
   file-open archivoAtaque
 
@@ -59,10 +61,10 @@ to setup-global-vars
   set metabolismEnergy 5
 
   ;;constraints
-  set maxEnergy 2000
-  set moveThreshold 800
-  set reproductionThreshold 1000
-  set championshipThreshold 1400
+  set maxEnergy 1500
+  set moveThreshold 400
+  set reproductionThreshold 600
+  set championshipThreshold 800
 end
 
 to load-data
@@ -81,9 +83,10 @@ to load-data
 end
 
 to go
-  load-data
+  ;;only load data if not on LevelSpace
+  if (not isInLevelSpace)[ load-data ]
   ;;force evolution only in case of attack
-  if (pheromones >= pheromoneThreshold)[
+  if (isUnderAtack)[
     feed
     move
     reproduce
@@ -104,16 +107,27 @@ to feed
 end
 
 to move
+  ;;not champions just vibrate
+  ;;champions move in a line when active
   ask gladiators with [energy > moveThreshold] [
     forward 1
-    set heading heading + (random 360)
+    ifelse (championship) [
+      ;;how to calculate a path (heading)
+      carefully [
+        set heading mean [heading] of gladiators with [energy > moveThreshold and championship]
+      ]
+      []
+    ]
+    [
+      set heading heading + (random 360)
+    ]
   ]
 end
 
 to reproduce
   ask gladiators with [energy >= 500][
     let roulette (random 1001) ;;0.1%
-    if (roulette < 1 and any? gladiators with [not championship and energy < 50]) [ ;;5% chance of giving genes
+    if (roulette < 1) [
       let r1 (random 20) + 6
       let r2 (random 11) + 26
 
@@ -131,14 +145,10 @@ to reproduce
       hatch-gladiators 1 [
         set genes seg1
         set energy 0
-
+        set age 0
+        set shape "person"
+        set championship False
       ]
-      ;
-      ;set mutatedGenes (replace-item r1 mutatedGenes (item r2 genes))
-      ;set mutatedGenes (replace-item r2 mutatedGenes (item r1 genes))
-      ;ask one-of (gladiators with [not championship and energy < 50]) [
-      ;  set genes mutatedGenes
-      ;]
     ]
   ]
 end
@@ -169,9 +179,9 @@ to ascend
 end
 @#$#@#$#@
 GRAPHICS-WINDOW
-210
+233
 10
-647
+774
 448
 -1
 -1
@@ -185,12 +195,12 @@ GRAPHICS-WINDOW
 1
 1
 1
+-20
+20
 -16
 16
--16
-16
-1
-1
+0
+0
 1
 ticks
 30.0
@@ -244,26 +254,11 @@ NIL
 NIL
 1
 
-SLIDER
-15
-43
-195
-76
-pheromone
-pheromone
-0
-10
-6.0
-1
-1
-NIL
-HORIZONTAL
-
 PLOT
-686
-14
-1167
-220
+787
+15
+1268
+221
 Global energy
 tick
 energy
@@ -295,10 +290,10 @@ NIL
 1
 
 PLOT
-688
-241
-1166
-437
+785
+236
+1263
+432
 Best inidvidual energy
 NIL
 NIL
